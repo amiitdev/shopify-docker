@@ -36,13 +36,24 @@ This project demonstrates real-world DevOps practices including:
 
 ## 🏗 Architecture Overview
 
+```
+Browser
+   ↓
+Nginx (Port 80 / 443)
+   ↓
+/api Reverse Proxy
+   ↓
+Backend (Internal Docker Network)
+```
 
-### 🔐 Key Design Decisions
+---
+
+## 🔐 Key Design Decisions
 
 - Backend port is **NOT exposed publicly**
 - All traffic flows through Nginx
 - `/api` requests are reverse proxied internally
-- Containers communicate through Docker’s internal DNS
+- Containers communicate using Docker internal DNS
 - Build stage and runtime stage are separated
 
 ---
@@ -53,14 +64,63 @@ This project demonstrates real-world DevOps practices including:
 
 ```bash
 docker compose build
+```
 
-## 2️⃣ Start the application
-   docker compose up
+### 2️⃣ Start the application
 
-## 3️⃣ Open in browser
-   http://localhost
+```bash
+docker compose up
+```
+
+### 3️⃣ Open in browser
+
+```
+http://localhost
+```
+
+---
 
 ## 🩺 Healthcheck
-    GET /health
 
-   
+Backend includes a health endpoint:
+
+```http
+GET /health
+```
+
+Docker automatically monitors container health.
+
+---
+
+## 📦 Project Structure
+
+```
+client/
+  ├── Dockerfile
+  ├── nginx.conf
+  └── src/
+
+server/
+  ├── Dockerfile
+  ├── api/
+  └── .dockerignore
+
+docker-compose.yml
+```
+
+---
+
+## 🎯 What This Project Demonstrates
+
+- Docker multi-stage builds
+- Reverse proxy architecture
+- Internal container networking
+- Production-style deployment setup
+- SSH-based Git configuration
+
+---
+
+## 👨‍💻 Author
+
+Amit Kumar  
+DevOps / Fullstack Developer
