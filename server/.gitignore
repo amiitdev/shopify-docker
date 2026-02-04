@@ -31,6 +31,8 @@ bower_components/
 
 # Environment variables file
 .env
+.env.*
+
 
 # Optional npm cache directory
 .npm/

@@ -1,7 +1,3 @@
-const isLocal = window.location.hostname === "localhost";
-
-const API_URL = isLocal
-  ? "http://localhost:3000"
-  : "https://shopify-theta-mauve.vercel.app";
+const API_URL = import.meta.env.VITE_API_URL;
 
 export default API_URL;
