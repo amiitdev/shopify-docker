@@ -24,11 +24,11 @@ jobs:
         with:
           context: ./server
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/shopify-backend:latest
+          tags: amiitdev/shopify-backend:latest
 
       - name: Build and Push Frontend
         uses: docker/build-push-action@v5
         with:
           context: ./client
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/shopify-frontend:latest
+          tags: amiitdev/shopify-frontend:latest
