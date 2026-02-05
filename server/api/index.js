@@ -32,6 +32,7 @@ app.use('/api', userRoutes, productRoutes);
 
 app.get('/', (req, res) => {
   res.send('Server is running!');
+  console.log('CI/CD Test');
 });
 
 app.get('/health', (req, res) => {
