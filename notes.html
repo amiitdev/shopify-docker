@@ -1,0 +1,1609 @@
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Docker & Docker Compose Complete Guide</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600&family=Inter:wght@300;400;500;600;700&display=swap');
+
+      * {
+        font-family: 'Inter', sans-serif;
+      }
+
+      code,
+      pre {
+        font-family: 'Fira Code', monospace !important;
+      }
+
+      :root {
+        --neon-blue: #00d9ff;
+        --neon-purple: #b967ff;
+        --neon-pink: #ff2a6d;
+        --neon-green: #00ff9d;
+        --dark-bg: #0a0a0f;
+        --darker-bg: #050508;
+        --card-bg: #11111f;
+        --border-glow: rgba(0, 217, 255, 0.2);
+      }
+
+      body {
+        background-color: var(--dark-bg);
+        color: #e2e8f0;
+        background-image:
+          radial-gradient(
+            circle at 10% 20%,
+            rgba(185, 103, 255, 0.05) 0%,
+            transparent 20%
+          ),
+          radial-gradient(
+            circle at 90% 80%,
+            rgba(0, 217, 255, 0.05) 0%,
+            transparent 20%
+          );
+        min-height: 100vh;
+      }
+
+      .neon-border {
+        border: 1px solid rgba(0, 217, 255, 0.3);
+        box-shadow:
+          0 0 15px rgba(0, 217, 255, 0.1),
+          inset 0 0 15px rgba(0, 217, 255, 0.05);
+      }
+
+      .neon-glow-blue {
+        text-shadow: 0 0 10px rgba(0, 217, 255, 0.7);
+      }
+
+      .neon-glow-purple {
+        text-shadow: 0 0 10px rgba(185, 103, 255, 0.7);
+      }
+
+      .neon-glow-pink {
+        text-shadow: 0 0 10px rgba(255, 42, 109, 0.7);
+      }
+
+      .neon-glow-green {
+        text-shadow: 0 0 10px rgba(0, 255, 157, 0.7);
+      }
+
+      .gradient-text-blue {
+        background: linear-gradient(90deg, var(--neon-blue), #0099ff);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+
+      .gradient-text-purple {
+        background: linear-gradient(90deg, var(--neon-purple), #ff00ff);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+
+      .gradient-text-pink {
+        background: linear-gradient(90deg, var(--neon-pink), #ff0066);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+
+      .gradient-text-green {
+        background: linear-gradient(90deg, var(--neon-green), #00cc88);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+
+      .card-bg {
+        background-color: var(--card-bg);
+        backdrop-filter: blur(10px);
+      }
+
+      .code-block {
+        background-color: var(--darker-bg);
+        border-left: 4px solid var(--neon-blue);
+        position: relative;
+      }
+
+      .code-block::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(0, 217, 255, 0.03),
+          transparent
+        );
+        pointer-events: none;
+      }
+
+      .note-tip {
+        border-left: 4px solid var(--neon-green);
+        background-color: rgba(0, 255, 157, 0.05);
+      }
+
+      .note-warning {
+        border-left: 4px solid var(--neon-pink);
+        background-color: rgba(255, 42, 109, 0.05);
+      }
+
+      .note-info {
+        border-left: 4px solid var(--neon-blue);
+        background-color: rgba(0, 217, 255, 0.05);
+      }
+
+      .note-important {
+        border-left: 4px solid var(--neon-purple);
+        background-color: rgba(185, 103, 255, 0.05);
+      }
+
+      .section-icon {
+        font-size: 1.5rem;
+        margin-right: 0.75rem;
+      }
+
+      .line-number {
+        color: #6b7280;
+        margin-right: 1rem;
+        user-select: none;
+      }
+
+      .docker-keyword {
+        color: var(--neon-blue);
+        font-weight: bold;
+      }
+
+      .docker-comment {
+        color: #6b7280;
+      }
+
+      .docker-arg {
+        color: var(--neon-green);
+      }
+
+      .docker-string {
+        color: #ffcc00;
+      }
+
+      .yaml-key {
+        color: var(--neon-purple);
+      }
+
+      .yaml-value {
+        color: var(--neon-green);
+      }
+
+      .yaml-number {
+        color: #ff9966;
+      }
+
+      .glow-hover:hover {
+        transform: translateY(-2px);
+        box-shadow:
+          0 0 20px rgba(0, 217, 255, 0.3),
+          0 5px 15px rgba(0, 0, 0, 0.5);
+        transition: all 0.3s ease;
+      }
+
+      @media (max-width: 768px) {
+        .mobile-stack {
+          flex-direction: column;
+        }
+
+        .mobile-full {
+          width: 100%;
+        }
+
+        .mobile-text-center {
+          text-align: center;
+        }
+
+        .mobile-p-4 {
+          padding: 1rem;
+        }
+
+        .code-block {
+          font-size: 0.9rem;
+          overflow-x: auto;
+        }
+      }
+    </style>
+  </head>
+  <body class="p-4 md:p-6 lg:p-8">
+    <!-- Header Section -->
+    <header class="mb-10 md:mb-12">
+      <div
+        class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4"
+      >
+        <div>
+          <h1
+            class="text-3xl md:text-4xl lg:text-5xl font-bold mb-2 gradient-text-blue"
+          >
+            <i class="fas fa-ship section-icon"></i>Docker & Docker Compose
+            Guide
+          </h1>
+          <p class="text-lg text-gray-300">
+            Complete DevOps breakdown with real examples
+          </p>
+        </div>
+        <div class="flex items-center space-x-2">
+          <span
+            class="px-3 py-1 rounded-full text-sm font-medium card-bg neon-border"
+          >
+            <i class="fas fa-code text-neon-blue mr-1"></i> Multi-Stage Build
+          </span>
+          <span
+            class="px-3 py-1 rounded-full text-sm font-medium card-bg neon-border"
+          >
+            <i class="fas fa-layer-group text-neon-purple mr-1"></i> Docker
+            Compose
+          </span>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div class="card-bg p-4 rounded-xl neon-border">
+          <div class="flex items-center mb-2">
+            <i class="fas fa-cogs text-neon-blue text-xl mr-3"></i>
+            <h3 class="font-bold text-lg gradient-text-blue">Frontend Build</h3>
+          </div>
+          <p class="text-gray-300">Node.js + Vite build with Nginx serving</p>
+        </div>
+
+        <div class="card-bg p-4 rounded-xl neon-border">
+          <div class="flex items-center mb-2">
+            <i class="fas fa-server text-neon-purple text-xl mr-3"></i>
+            <h3 class="font-bold text-lg gradient-text-purple">Backend API</h3>
+          </div>
+          <p class="text-gray-300">Node.js API server with Alpine Linux</p>
+        </div>
+
+        <div class="card-bg p-4 rounded-xl neon-border">
+          <div class="flex items-center mb-2">
+            <i class="fas fa-network-wired text-neon-green text-xl mr-3"></i>
+            <h3 class="font-bold text-lg gradient-text-green">Orchestration</h3>
+          </div>
+          <p class="text-gray-300">Multi-service Docker Compose setup</p>
+        </div>
+      </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto">
+      <!-- Part 1: Frontend Dockerfile -->
+      <section class="mb-12 md:mb-16">
+        <div class="flex items-center mb-6">
+          <div
+            class="bg-gradient-to-r from-blue-500 to-cyan-400 p-3 rounded-xl mr-4"
+          >
+            <i class="fas fa-desktop text-white text-2xl"></i>
+          </div>
+          <div>
+            <h2 class="text-2xl md:text-3xl font-bold gradient-text-blue">
+              Part 1: Frontend Dockerfile
+            </h2>
+            <p class="text-gray-400">Multi-stage build with Node.js + Nginx</p>
+          </div>
+        </div>
+
+        <div class="card-bg rounded-2xl p-6 neon-border mb-8">
+          <div class="flex items-center mb-4">
+            <i class="fas fa-file-code text-neon-blue text-xl mr-3"></i>
+            <h3 class="text-xl font-bold neon-glow-blue">
+              Complete Dockerfile
+            </h3>
+          </div>
+
+          <div class="code-block rounded-lg p-4 md:p-6 mb-6 overflow-x-auto">
+            <div class="flex items-center mb-4">
+              <div class="h-3 w-3 rounded-full bg-red-500 mr-2"></div>
+              <div class="h-3 w-3 rounded-full bg-yellow-500 mr-2"></div>
+              <div class="h-3 w-3 rounded-full bg-green-500 mr-2"></div>
+              <span class="text-sm text-gray-400 ml-2">Dockerfile</span>
+            </div>
+
+            <pre class="text-sm md:text-base"><code>
+<span class="docker-comment"># Build stage</span>
+<span class="docker-keyword">FROM</span> node:20-alpine <span class="docker-keyword">as</span> build
+
+<span class="docker-keyword">WORKDIR</span> /app
+
+<span class="docker-keyword">COPY</span> package*.json ./
+<span class="docker-keyword">RUN</span> npm install
+
+<span class="docker-keyword">COPY</span> . .
+
+<span class="docker-keyword">ARG</span> <span class="docker-arg">VITE_API_URL</span>
+<span class="docker-keyword">ENV</span> <span class="docker-arg">VITE_API_URL</span>=$VITE_API_URL
+
+<span class="docker-keyword">RUN</span> npm run build
+
+<span class="docker-comment"># Production stage</span>
+<span class="docker-keyword">FROM</span> nginx:alpine
+
+<span class="docker-keyword">COPY</span> --from=build /app/dist /usr/share/nginx/html
+
+<span class="docker-keyword">EXPOSE</span> 80
+
+<span class="docker-keyword">CMD</span> <span class="docker-string">["nginx", "-g", "daemon off;"]</span></code></pre>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Left Column: Build Stage -->
+            <div>
+              <div class="flex items-center mb-4">
+                <div
+                  class="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 flex items-center justify-center mr-3"
+                >
+                  <span class="font-bold text-white">1</span>
+                </div>
+                <h4 class="text-lg font-bold gradient-text-blue">
+                  Build Stage
+                </h4>
+              </div>
+
+              <div class="space-y-4">
+                <div class="note-info p-4 rounded-lg">
+                  <div class="flex items-start">
+                    <i class="fas fa-info-circle text-neon-blue mt-1 mr-3"></i>
+                    <div>
+                      <h5 class="font-bold mb-1">
+                        FROM node:20-alpine as build
+                      </h5>
+                      <p class="text-gray-300">
+                        Base image with Node.js 20 on Alpine Linux.
+                        <span class="font-medium text-neon-blue">as build</span>
+                        names this stage for later reference.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="note-info p-4 rounded-lg">
+                  <div class="flex items-start">
+                    <i class="fas fa-info-circle text-neon-blue mt-1 mr-3"></i>
+                    <div>
+                      <h5 class="font-bold mb-1">WORKDIR /app</h5>
+                      <p class="text-gray-300">
+                        Sets working directory inside container. All subsequent
+                        commands run in
+                        <span class="font-mono bg-gray-800 px-2 py-1 rounded"
+                          >/app</span
+                        >.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="note-tip p-4 rounded-lg">
+                  <div class="flex items-start">
+                    <i class="fas fa-lightbulb text-neon-green mt-1 mr-3"></i>
+                    <div>
+                      <h5 class="font-bold mb-1">COPY package*.json ./</h5>
+                      <p class="text-gray-300">
+                        Copies only dependency files first. This enables
+                        <span class="font-bold gradient-text-green"
+                          >Docker layer caching</span
+                        >
+                        for faster builds when dependencies don't change.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="note-info p-4 rounded-lg">
+                  <div class="flex items-start">
+                    <i class="fas fa-info-circle text-neon-blue mt-1 mr-3"></i>
+                    <div>
+                      <h5 class="font-bold mb-1">RUN npm install</h5>
+                      <p class="text-gray-300">
+                        Installs all dependencies defined in package.json.
+                        Creates
+                        <span class="font-mono bg-gray-800 px-2 py-1 rounded"
+                          >node_modules</span
+                        >
+                        inside container.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="note-info p-4 rounded-lg">
+                  <div class="flex items-start">
+                    <i class="fas fa-info-circle text-neon-blue mt-1 mr-3"></i>
+                    <div>
+                      <h5 class="font-bold mb-1">COPY . .</h5>
+                      <p class="text-gray-300">
+                        Copies all remaining source code into container. Now
+                        container has complete application.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="note-important p-4 rounded-lg">
+                  <div class="flex items-start">
+                    <i
+                      class="fas fa-exclamation-circle text-neon-purple mt-1 mr-3"
+                    ></i>
+                    <div>
+                      <h5 class="font-bold mb-1">ARG & ENV VITE_API_URL</h5>
+                      <p class="text-gray-300">
+                        <span class="docker-keyword">ARG</span> is build-time
+                        variable. <span class="docker-keyword">ENV</span> makes
+                        it available in container. Used by Vite to set API
+                        endpoint.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="note-info p-4 rounded-lg">
+                  <div class="flex items-start">
+                    <i class="fas fa-info-circle text-neon-blue mt-1 mr-3"></i>
+                    <div>
+                      <h5 class="font-bold mb-1">RUN npm run build</h5>
+                      <p class="text-gray-300">
+                        Executes
+                        <span class="font-mono bg-gray-800 px-2 py-1 rounded"
+                          >vite build</span
+                        >
+                        to create production-ready static files in
+                        <span class="font-mono bg-gray-800 px-2 py-1 rounded"
+                          >/app/dist</span
+                        >.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Column: Production Stage -->
+            <div>
+              <div class="flex items-center mb-4">
+                <div
+                  class="w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-pink-400 flex items-center justify-center mr-3"
+                >
+                  <span class="font-bold text-white">2</span>
+                </div>
+                <h4 class="text-lg font-bold gradient-text-purple">
+                  Production Stage
+                </h4>
+              </div>
+
+              <div class="space-y-4">
+                <div class="note-info p-4 rounded-lg">
+                  <div class="flex items-start">
+                    <i class="fas fa-info-circle text-neon-blue mt-1 mr-3"></i>
+                    <div>
+                      <h5 class="font-bold mb-1">FROM nginx:alpine</h5>
+                      <p class="text-gray-300">
+                        Starts fresh with lightweight Nginx image.
+                        <span class="font-bold gradient-text-purple"
+                          >No Node.js included</span
+                        >
+                        - smaller and more secure.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="note-tip p-4 rounded-lg">
+                  <div class="flex items-start">
+                    <i class="fas fa-lightbulb text-neon-green mt-1 mr-3"></i>
+                    <div>
+                      <h5 class="font-bold mb-1">
+                        COPY --from=build /app/dist /usr/share/nginx/html
+                      </h5>
+                      <p class="text-gray-300">
+                        Copies built files from
+                        <span class="font-bold gradient-text-blue"
+                          >build stage</span
+                        >
+                        to Nginx's default public directory. This is the
+                        <span class="font-bold gradient-text-green"
+                          >multi-stage magic</span
+                        >.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="note-info p-4 rounded-lg">
+                  <div class="flex items-start">
+                    <i class="fas fa-info-circle text-neon-blue mt-1 mr-3"></i>
+                    <div>
+                      <h5 class="font-bold mb-1">EXPOSE 80</h5>
+                      <p class="text-gray-300">
+                        Documents that container listens on port 80. Doesn't
+                        publish it - that happens with
+                        <span class="font-mono bg-gray-800 px-2 py-1 rounded"
+                          >-p</span
+                        >
+                        flag or in docker-compose.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="note-warning p-4 rounded-lg">
+                  <div class="flex items-start">
+                    <i
+                      class="fas fa-exclamation-triangle text-neon-pink mt-1 mr-3"
+                    ></i>
+                    <div>
+                      <h5 class="font-bold mb-1">
+                        CMD ["nginx", "-g", "daemon off;"]
+                      </h5>
+                      <p class="text-gray-300">
+                        Runs Nginx in foreground.
+                        <span class="font-bold text-neon-pink"
+                          >Crucial for Docker</span
+                        >
+                        - containers exit when main process stops.
+                        <span class="font-mono bg-gray-800 px-2 py-1 rounded"
+                          >daemon off</span
+                        >
+                        prevents Nginx from running in background.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Architecture Visualization -->
+                <div
+                  class="mt-6 p-4 rounded-xl"
+                  style="
+                    background: linear-gradient(
+                      135deg,
+                      rgba(11, 15, 25, 0.9),
+                      rgba(17, 17, 31, 0.9)
+                    );
+                    border: 1px solid rgba(185, 103, 255, 0.3);
+                  "
+                >
+                  <h5
+                    class="font-bold text-lg mb-3 gradient-text-purple text-center"
+                  >
+                    <i class="fas fa-project-diagram mr-2"></i>Architecture Flow
+                  </h5>
+                  <div class="flex flex-col items-center">
+                    <div class="flex items-center justify-center mb-2">
+                      <div
+                        class="text-center p-3 rounded-lg bg-gradient-to-r from-blue-500/20 to-cyan-400/20 border border-blue-500/30"
+                      >
+                        <i
+                          class="fas fa-industry text-2xl text-neon-blue mb-1"
+                        ></i>
+                        <p class="text-sm font-medium">Build Stage</p>
+                        <p class="text-xs text-gray-400">Node.js Factory</p>
+                      </div>
+                      <div class="mx-4">
+                        <i
+                          class="fas fa-arrow-right text-neon-purple text-xl"
+                        ></i>
+                      </div>
+                      <div
+                        class="text-center p-3 rounded-lg bg-gradient-to-r from-purple-500/20 to-pink-400/20 border border-purple-500/30"
+                      >
+                        <i
+                          class="fas fa-store text-2xl text-neon-purple mb-1"
+                        ></i>
+                        <p class="text-sm font-medium">Production Stage</p>
+                        <p class="text-xs text-gray-400">Nginx Showroom</p>
+                      </div>
+                    </div>
+                    <p class="text-sm text-center text-gray-400 mt-2">
+                      Factory builds product → Showroom displays finished
+                      product
+                    </p>
+                  </div>
+                </div>
+
+                <!-- Interview Question -->
+                <div class="note-important p-4 rounded-lg mt-4">
+                  <div class="flex items-start">
+                    <i
+                      class="fas fa-question-circle text-neon-purple mt-1 mr-3"
+                    ></i>
+                    <div>
+                      <h5 class="font-bold mb-1">
+                        Interview Question: Why multi-stage?
+                      </h5>
+                      <p class="text-gray-300 mb-2">
+                        <strong>Q:</strong> Why not use Node in production?
+                      </p>
+                      <p class="text-gray-300">
+                        <strong>A:</strong> Node is only needed to build. After
+                        build, only static files remain. Nginx is faster and
+                        lighter for static serving, resulting in smaller, more
+                        secure images.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Part 2: Backend Dockerfile -->
+      <section class="mb-12 md:mb-16">
+        <div class="flex items-center mb-6">
+          <div
+            class="bg-gradient-to-r from-purple-500 to-pink-400 p-3 rounded-xl mr-4"
+          >
+            <i class="fas fa-server text-white text-2xl"></i>
+          </div>
+          <div>
+            <h2 class="text-2xl md:text-3xl font-bold gradient-text-purple">
+              Part 2: Backend Dockerfile
+            </h2>
+            <p class="text-gray-400">Node.js API server with Alpine Linux</p>
+          </div>
+        </div>
+
+        <div class="card-bg rounded-2xl p-6 neon-border">
+          <div class="flex items-center mb-4">
+            <i class="fas fa-file-code text-neon-purple text-xl mr-3"></i>
+            <h3 class="text-xl font-bold neon-glow-purple">
+              Complete Dockerfile
+            </h3>
+          </div>
+
+          <div class="code-block rounded-lg p-4 md:p-6 mb-6 overflow-x-auto">
+            <div class="flex items-center mb-4">
+              <div class="h-3 w-3 rounded-full bg-red-500 mr-2"></div>
+              <div class="h-3 w-3 rounded-full bg-yellow-500 mr-2"></div>
+              <div class="h-3 w-3 rounded-full bg-green-500 mr-2"></div>
+              <span class="text-sm text-gray-400 ml-2"
+                >Dockerfile (Backend)</span
+              >
+            </div>
+
+            <pre class="text-sm md:text-base"><code>
+<span class="docker-keyword">FROM</span> node:20-alpine
+
+<span class="docker-keyword">WORKDIR</span> /app
+
+<span class="docker-keyword">COPY</span> package*.json ./
+<span class="docker-keyword">RUN</span> npm install
+
+<span class="docker-keyword">COPY</span> . .
+
+<span class="docker-keyword">EXPOSE</span> 3000
+
+<span class="docker-keyword">CMD</span> <span class="docker-string">["node", "api/index.js"]</span></code></pre>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Left Column: Line by Line Explanation -->
+            <div>
+              <h4 class="text-lg font-bold mb-4 gradient-text-purple">
+                <i class="fas fa-microscope mr-2"></i>Line-by-Line Analysis
+              </h4>
+
+              <div class="space-y-4">
+                <div class="note-info p-4 rounded-lg">
+                  <div class="flex items-start">
+                    <i class="fas fa-cube text-neon-purple mt-1 mr-3"></i>
+                    <div>
+                      <h5 class="font-bold mb-1">FROM node:20-alpine</h5>
+                      <p class="text-gray-300">
+                        Base image with Node.js 20 on Alpine Linux.
+                        <span class="font-bold gradient-text-purple"
+                          >Alpine</span
+                        >
+                        is lightweight (~5MB) with smaller attack surface.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="note-info p-4 rounded-lg">
+                  <div class="flex items-start">
+                    <i class="fas fa-folder text-neon-purple mt-1 mr-3"></i>
+                    <div>
+                      <h5 class="font-bold mb-1">WORKDIR /app</h5>
+                      <p class="text-gray-300">
+                        Creates and sets
+                        <span class="font-mono bg-gray-800 px-2 py-1 rounded"
+                          >/app</span
+                        >
+                        as working directory. Equivalent to
+                        <span class="font-mono bg-gray-800 px-2 py-1 rounded"
+                          >mkdir /app && cd /app</span
+                        >.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="note-tip p-4 rounded-lg">
+                  <div class="flex items-start">
+                    <i class="fas fa-bolt text-neon-green mt-1 mr-3"></i>
+                    <div>
+                      <h5 class="font-bold mb-1">COPY package*.json ./</h5>
+                      <p class="text-gray-300">
+                        Copies dependency files first for
+                        <span class="font-bold gradient-text-green"
+                          >Docker layer caching</span
+                        >. If source code changes but dependencies don't, Docker
+                        reuses npm install layer.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="note-info p-4 rounded-lg">
+                  <div class="flex items-start">
+                    <i class="fas fa-download text-neon-purple mt-1 mr-3"></i>
+                    <div>
+                      <h5 class="font-bold mb-1">RUN npm install</h5>
+                      <p class="text-gray-300">
+                        Installs dependencies from package.json. Creates
+                        <span class="font-mono bg-gray-800 px-2 py-1 rounded"
+                          >node_modules</span
+                        >
+                        inside container.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="note-info p-4 rounded-lg">
+                  <div class="flex items-start">
+                    <i class="fas fa-copy text-neon-purple mt-1 mr-3"></i>
+                    <div>
+                      <h5 class="font-bold mb-1">COPY . .</h5>
+                      <p class="text-gray-300">
+                        Copies all remaining source code (API routes,
+                        controllers, etc.) into container.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Column: Network & Production Notes -->
+            <div>
+              <h4 class="text-lg font-bold mb-4 gradient-text-purple">
+                <i class="fas fa-network-wired mr-2"></i>Networking & Production
+              </h4>
+
+              <div class="space-y-4">
+                <div class="note-important p-4 rounded-lg">
+                  <div class="flex items-start">
+                    <i class="fas fa-plug text-neon-purple mt-1 mr-3"></i>
+                    <div>
+                      <h5 class="font-bold mb-1">EXPOSE 3000</h5>
+                      <p class="text-gray-300">
+                        Documents that app listens on port 3000. To actually
+                        publish:
+                        <span class="font-mono bg-gray-800 px-2 py-1 rounded"
+                          >docker run -p 3000:3000 myapp</span
+                        >.
+                      </p>
+                      <p class="text-sm text-gray-400 mt-1">
+                        Left: host machine, Right: container
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="note-warning p-4 rounded-lg">
+                  <div class="flex items-start">
+                    <i class="fas fa-play-circle text-neon-pink mt-1 mr-3"></i>
+                    <div>
+                      <h5 class="font-bold mb-1">
+                        CMD ["node", "api/index.js"]
+                      </h5>
+                      <p class="text-gray-300">
+                        Default command when container starts. Server must be at
+                        <span class="font-mono bg-gray-800 px-2 py-1 rounded"
+                          >/app/api/index.js</span
+                        >.
+                      </p>
+                      <p class="text-sm text-gray-400 mt-1">
+                        Why CMD not RUN? RUN executes during build, CMD at
+                        runtime.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="note-warning p-4 rounded-lg">
+                  <div class="flex items-start">
+                    <i
+                      class="fas fa-exclamation-triangle text-neon-pink mt-1 mr-3"
+                    ></i>
+                    <div>
+                      <h5 class="font-bold mb-1">⚠️ Production Warning</h5>
+                      <p class="text-gray-300">
+                        This is OK for dev, but real production needs:
+                      </p>
+                      <ul
+                        class="list-disc pl-5 mt-2 text-gray-300 text-sm space-y-1"
+                      >
+                        <li>
+                          <span class="font-mono"
+                            >npm ci --only=production</span
+                          >
+                          (faster, predictable)
+                        </li>
+                        <li>Non-root user for security</li>
+                        <li>Process manager (PM2)</li>
+                        <li>Reverse proxy (Nginx)</li>
+                        <li>Health checks</li>
+                        <li>Proper logging</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Architecture Flow -->
+                <div
+                  class="p-4 rounded-lg"
+                  style="
+                    background: linear-gradient(
+                      135deg,
+                      rgba(17, 17, 31, 0.9),
+                      rgba(11, 15, 25, 0.9)
+                    );
+                    border: 1px solid rgba(255, 42, 109, 0.3);
+                  "
+                >
+                  <h5 class="font-bold mb-2 gradient-text-pink">
+                    <i class="fas fa-random mr-2"></i>Architecture Flow
+                  </h5>
+                  <div class="flex items-center justify-between text-sm">
+                    <div class="text-center">
+                      <div
+                        class="w-10 h-10 rounded-full bg-gradient-to-r from-red-500 to-pink-400 flex items-center justify-center mx-auto mb-1"
+                      >
+                        <i class="fas fa-globe text-white"></i>
+                      </div>
+                      <p>Browser</p>
+                    </div>
+                    <i class="fas fa-arrow-right text-neon-pink"></i>
+                    <div class="text-center">
+                      <div
+                        class="w-10 h-10 rounded-full bg-gradient-to-r from-yellow-500 to-orange-400 flex items-center justify-center mx-auto mb-1"
+                      >
+                        <span class="font-bold">3000</span>
+                      </div>
+                      <p>Host Port</p>
+                    </div>
+                    <i class="fas fa-arrow-right text-neon-pink"></i>
+                    <div class="text-center">
+                      <div
+                        class="w-10 h-10 rounded-full bg-gradient-to-r from-green-500 to-emerald-400 flex items-center justify-center mx-auto mb-1"
+                      >
+                        <span class="font-bold">3000</span>
+                      </div>
+                      <p>Container</p>
+                    </div>
+                    <i class="fas fa-arrow-right text-neon-pink"></i>
+                    <div class="text-center">
+                      <div
+                        class="w-10 h-10 rounded-full bg-gradient-to-r from-purple-500 to-indigo-400 flex items-center justify-center mx-auto mb-1"
+                      >
+                        <i class="fas fa-code text-white"></i>
+                      </div>
+                      <p>Node App</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Professional Version -->
+          <div class="mt-8">
+            <h4 class="text-lg font-bold mb-4 gradient-text-green">
+              <i class="fas fa-medal mr-2"></i>Professional Version
+            </h4>
+
+            <div class="code-block rounded-lg p-4 md:p-6 mb-4 overflow-x-auto">
+              <div class="flex items-center mb-4">
+                <div class="h-3 w-3 rounded-full bg-red-500 mr-2"></div>
+                <div class="h-3 w-3 rounded-full bg-yellow-500 mr-2"></div>
+                <div class="h-3 w-3 rounded-full bg-green-500 mr-2"></div>
+                <span class="text-sm text-gray-400 ml-2"
+                  >Dockerfile (Production-ready)</span
+                >
+              </div>
+
+              <pre class="text-sm md:text-base"><code>
+<span class="docker-keyword">FROM</span> node:20-alpine
+
+<span class="docker-keyword">WORKDIR</span> /app
+
+<span class="docker-keyword">COPY</span> package*.json ./
+
+<span class="docker-comment"># Use npm ci for production (faster, more reliable)</span>
+<span class="docker-keyword">RUN</span> npm ci --only=production
+
+<span class="docker-keyword">COPY</span> . .
+
+<span class="docker-comment"># Create non-root user for security</span>
+<span class="docker-keyword">RUN</span> addgroup -g 1001 -S nodejs && \
+    adduser -S nodejs -u 1001
+
+<span class="docker-keyword">USER</span> nodejs
+
+<span class="docker-keyword">EXPOSE</span> 3000
+
+<span class="docker-keyword">CMD</span> <span class="docker-string">["node", "api/index.js"]</span></code></pre>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Part 3: Docker Compose -->
+      <section class="mb-12 md:mb-16">
+        <div class="flex items-center mb-6">
+          <div
+            class="bg-gradient-to-r from-green-500 to-emerald-400 p-3 rounded-xl mr-4"
+          >
+            <i class="fas fa-layer-group text-white text-2xl"></i>
+          </div>
+          <div>
+            <h2 class="text-2xl md:text-3xl font-bold gradient-text-green">
+              Part 3: Docker Compose
+            </h2>
+            <p class="text-gray-400">
+              Multi-service orchestration for full-stack apps
+            </p>
+          </div>
+        </div>
+
+        <div class="card-bg rounded-2xl p-6 neon-border">
+          <div class="flex items-center mb-4">
+            <i class="fas fa-file-code text-neon-green text-xl mr-3"></i>
+            <h3 class="text-xl font-bold neon-glow-green">
+              Complete docker-compose.yml
+            </h3>
+          </div>
+
+          <div class="code-block rounded-lg p-4 md:p-6 mb-6 overflow-x-auto">
+            <div class="flex items-center mb-4">
+              <div class="h-3 w-3 rounded-full bg-red-500 mr-2"></div>
+              <div class="h-3 w-3 rounded-full bg-yellow-500 mr-2"></div>
+              <div class="h-3 w-3 rounded-full bg-green-500 mr-2"></div>
+              <span class="text-sm text-gray-400 ml-2">docker-compose.yml</span>
+            </div>
+
+            <pre class="text-sm md:text-base"><code>
+<span class="yaml-key">version</span>: <span class="yaml-string">'3.8'</span>
+
+<span class="yaml-key">services</span>:
+  <span class="yaml-key">backend</span>:
+    <span class="yaml-key">build</span>: <span class="yaml-string">./server</span>
+    <span class="yaml-key">ports</span>:
+      - <span class="yaml-string">'3000:3000'</span>
+    <span class="yaml-key">env_file</span>:
+      - <span class="yaml-string">./server/.env</span>
+
+  <span class="yaml-key">frontend</span>:
+    <span class="yaml-key">build</span>:
+      <span class="yaml-key">context</span>: <span class="yaml-string">./client</span>
+      <span class="yaml-key">args</span>:
+        <span class="yaml-key">VITE_API_URL</span>: <span class="yaml-string">http://localhost:3000</span>
+    <span class="yaml-key">ports</span>:
+      - <span class="yaml-string">'80:80'</span>
+    <span class="yaml-key">depends_on</span>:
+      - <span class="yaml-key">backend</span></code></pre>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Left Column: Compose Basics -->
+            <div>
+              <h4 class="text-lg font-bold mb-4 gradient-text-green">
+                <i class="fas fa-cogs mr-2"></i>Compose File Structure
+              </h4>
+
+              <div class="space-y-4">
+                <div class="note-info p-4 rounded-lg">
+                  <div class="flex items-start">
+                    <i class="fas fa-code-branch text-neon-green mt-1 mr-3"></i>
+                    <div>
+                      <h5 class="font-bold mb-1">version: '3.8'</h5>
+                      <p class="text-gray-300">
+                        Defines Docker Compose file format version. 3.8 is
+                        stable with good feature support.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="note-important p-4 rounded-lg">
+                  <div class="flex items-start">
+                    <i class="fas fa-cubes text-neon-purple mt-1 mr-3"></i>
+                    <div>
+                      <h5 class="font-bold mb-1">services:</h5>
+                      <p class="text-gray-300">
+                        Root key where you define containers. Each service = one
+                        container. Compose orchestrates them as one application.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="note-info p-4 rounded-lg">
+                  <div class="flex items-start">
+                    <i class="fas fa-server text-neon-blue mt-1 mr-3"></i>
+                    <div>
+                      <h5 class="font-bold mb-1">backend: section</h5>
+                      <p class="text-gray-300">
+                        Defines the backend service (Node.js API).
+                      </p>
+                      <ul
+                        class="list-disc pl-5 mt-2 text-sm text-gray-300 space-y-1"
+                      >
+                        <li>
+                          <span class="font-mono">build: ./server</span> -
+                          Builds from Dockerfile in ./server
+                        </li>
+                        <li>
+                          <span class="font-mono">ports: '3000:3000'</span> -
+                          Maps host:container ports
+                        </li>
+                        <li>
+                          <span class="font-mono">env_file: ./server/.env</span>
+                          - Loads environment variables
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- What Compose Automatically Creates -->
+              <div
+                class="mt-6 p-4 rounded-xl"
+                style="
+                  background: linear-gradient(
+                    135deg,
+                    rgba(11, 15, 25, 0.9),
+                    rgba(17, 17, 31, 0.9)
+                  );
+                  border: 1px solid rgba(0, 255, 157, 0.3);
+                "
+              >
+                <h5 class="font-bold text-lg mb-3 gradient-text-green">
+                  <i class="fas fa-magic mr-2"></i>What Docker Compose Creates
+                  Automatically
+                </h5>
+                <div class="grid grid-cols-2 gap-3 text-sm">
+                  <div class="flex items-center">
+                    <i class="fas fa-network-wired text-neon-green mr-2"></i>
+                    <span>Docker Network</span>
+                  </div>
+                  <div class="flex items-center">
+                    <i class="fas fa-server text-neon-green mr-2"></i>
+                    <span>Service DNS</span>
+                  </div>
+                  <div class="flex items-center">
+                    <i class="fas fa-plug text-neon-green mr-2"></i>
+                    <span>Port Mapping</span>
+                  </div>
+                  <div class="flex items-center">
+                    <i class="fas fa-play text-neon-green mr-2"></i>
+                    <span>Startup Order</span>
+                  </div>
+                </div>
+                <p class="text-sm text-gray-400 mt-3">
+                  When you run
+                  <span class="font-mono bg-gray-800 px-2 py-1 rounded"
+                    >docker compose up</span
+                  >, Docker handles all of this automatically!
+                </p>
+              </div>
+            </div>
+
+            <!-- Right Column: Frontend Service & Networking -->
+            <div>
+              <h4 class="text-lg font-bold mb-4 gradient-text-green">
+                <i class="fas fa-sitemap mr-2"></i>Frontend Service & Networking
+              </h4>
+
+              <div class="space-y-4">
+                <div class="note-info p-4 rounded-lg">
+                  <div class="flex items-start">
+                    <i class="fas fa-desktop text-neon-blue mt-1 mr-3"></i>
+                    <div>
+                      <h5 class="font-bold mb-1">frontend: section</h5>
+                      <p class="text-gray-300">
+                        Defines the frontend service (Vite + Nginx).
+                      </p>
+                      <ul
+                        class="list-disc pl-5 mt-2 text-sm text-gray-300 space-y-1"
+                      >
+                        <li>
+                          <span class="font-mono">context: ./client</span> -
+                          Build context folder
+                        </li>
+                        <li>
+                          <span class="font-mono">args: VITE_API_URL</span> -
+                          Build argument for frontend
+                        </li>
+                        <li>
+                          <span class="font-mono">ports: '80:80'</span> - Serves
+                          on standard HTTP port
+                        </li>
+                        <li>
+                          <span class="font-mono">depends_on: - backend</span> -
+                          Startup dependency
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="note-warning p-4 rounded-lg">
+                  <div class="flex items-start">
+                    <i
+                      class="fas fa-exclamation-triangle text-neon-pink mt-1 mr-3"
+                    ></i>
+                    <div>
+                      <h5 class="font-bold mb-1">
+                        ⚠️ Critical Networking Issue
+                      </h5>
+                      <p class="text-gray-300 mb-2">
+                        <span class="font-mono bg-gray-800 px-2 py-1 rounded"
+                          >VITE_API_URL: http://localhost:3000</span
+                        >
+                        is
+                        <span class="font-bold text-neon-pink"
+                          >WRONG for Docker</span
+                        >!
+                      </p>
+                      <p class="text-gray-300">
+                        Inside container,
+                        <span class="font-mono">localhost</span> means the
+                        container itself, not the host machine.
+                      </p>
+                      <p class="text-gray-300 mt-2">
+                        <span class="font-bold gradient-text-green"
+                          >Correct approach:</span
+                        >
+                        Use service name
+                        <span class="font-mono bg-gray-800 px-2 py-1 rounded"
+                          >http://backend:3000</span
+                        >
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="note-tip p-4 rounded-lg">
+                  <div class="flex items-start">
+                    <i class="fas fa-lightbulb text-neon-green mt-1 mr-3"></i>
+                    <div>
+                      <h5 class="font-bold mb-1">depends_on: nuance</h5>
+                      <p class="text-gray-300">
+                        <span class="font-mono">depends_on</span> only ensures
+                        startup order,
+                        <span class="font-bold text-neon-pink"
+                          >not readiness</span
+                        >.
+                      </p>
+                      <p class="text-gray-300 mt-2">
+                        For production: add healthchecks to ensure backend is
+                        ready before frontend tries to connect.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Architecture Diagram -->
+              <div
+                class="mt-6 p-4 rounded-xl"
+                style="
+                  background: linear-gradient(
+                    135deg,
+                    rgba(17, 17, 31, 0.9),
+                    rgba(11, 15, 25, 0.9)
+                  );
+                  border: 1px solid rgba(185, 103, 255, 0.3);
+                "
+              >
+                <h5
+                  class="font-bold text-lg mb-3 gradient-text-purple text-center"
+                >
+                  <i class="fas fa-project-diagram mr-2"></i>Full Architecture
+                  Flow
+                </h5>
+                <div class="text-center">
+                  <div
+                    class="flex flex-col md:flex-row items-center justify-center mb-2"
+                  >
+                    <div
+                      class="text-center p-3 rounded-lg bg-gradient-to-r from-blue-500/20 to-cyan-400/20 border border-blue-500/30 m-2"
+                    >
+                      <i class="fas fa-globe text-2xl text-neon-blue mb-1"></i>
+                      <p class="text-sm font-medium">Browser</p>
+                      <p class="text-xs text-gray-400">http://localhost</p>
+                    </div>
+                    <div class="mx-2 my-2">
+                      <i
+                        class="fas fa-arrow-right text-neon-purple text-xl"
+                      ></i>
+                    </div>
+                    <div
+                      class="text-center p-3 rounded-lg bg-gradient-to-r from-green-500/20 to-emerald-400/20 border border-green-500/30 m-2"
+                    >
+                      <i
+                        class="fas fa-desktop text-2xl text-neon-green mb-1"
+                      ></i>
+                      <p class="text-sm font-medium">Frontend</p>
+                      <p class="text-xs text-gray-400">Nginx:80</p>
+                    </div>
+                    <div class="mx-2 my-2">
+                      <i
+                        class="fas fa-arrow-right text-neon-purple text-xl"
+                      ></i>
+                    </div>
+                    <div
+                      class="text-center p-3 rounded-lg bg-gradient-to-r from-purple-500/20 to-pink-400/20 border border-purple-500/30 m-2"
+                    >
+                      <i
+                        class="fas fa-server text-2xl text-neon-purple mb-1"
+                      ></i>
+                      <p class="text-sm font-medium">Backend</p>
+                      <p class="text-xs text-gray-400">Node:3000</p>
+                    </div>
+                  </div>
+                  <p class="text-sm text-gray-400 mt-2">
+                    All containers communicate via Docker's internal network
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Production Improvements -->
+          <div class="mt-8">
+            <h4 class="text-lg font-bold mb-4 gradient-text-blue">
+              <i class="fas fa-rocket mr-2"></i>Production Improvements
+            </h4>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div class="card-bg p-4 rounded-xl neon-border glow-hover">
+                <div class="flex items-center mb-3">
+                  <div
+                    class="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 flex items-center justify-center mr-3"
+                  >
+                    <i class="fas fa-link text-white"></i>
+                  </div>
+                  <h5 class="font-bold">Internal Service Name</h5>
+                </div>
+                <p class="text-sm text-gray-300">
+                  Use
+                  <span class="font-mono bg-gray-800 px-2 py-1 rounded"
+                    >VITE_API_URL=http://backend:3000</span
+                  >
+                  for container-to-container communication.
+                </p>
+              </div>
+
+              <div class="card-bg p-4 rounded-xl neon-border glow-hover">
+                <div class="flex items-center mb-3">
+                  <div
+                    class="w-10 h-10 rounded-full bg-gradient-to-r from-purple-500 to-pink-400 flex items-center justify-center mr-3"
+                  >
+                    <i class="fas fa-redo text-white"></i>
+                  </div>
+                  <h5 class="font-bold">Restart Policy</h5>
+                </div>
+                <p class="text-sm text-gray-300">
+                  Add
+                  <span class="font-mono bg-gray-800 px-2 py-1 rounded"
+                    >restart: always</span
+                  >
+                  to automatically restart containers on failure.
+                </p>
+              </div>
+
+              <div class="card-bg p-4 rounded-xl neon-border glow-hover">
+                <div class="flex items-center mb-3">
+                  <div
+                    class="w-10 h-10 rounded-full bg-gradient-to-r from-green-500 to-emerald-400 flex items-center justify-center mr-3"
+                  >
+                    <i class="fas fa-heartbeat text-white"></i>
+                  </div>
+                  <h5 class="font-bold">Health Checks</h5>
+                </div>
+                <p class="text-sm text-gray-300">
+                  Add healthcheck configurations to ensure services are actually
+                  ready, not just started.
+                </p>
+              </div>
+            </div>
+
+            <!-- Interview Question -->
+            <div class="note-important p-4 rounded-lg mt-6">
+              <div class="flex items-start">
+                <i
+                  class="fas fa-question-circle text-neon-purple mt-1 mr-3"
+                ></i>
+                <div>
+                  <h5 class="font-bold mb-1">
+                    Interview Question: Container Communication
+                  </h5>
+                  <p class="text-gray-300 mb-2">
+                    <strong>Q:</strong> How does frontend container communicate
+                    with backend?
+                  </p>
+                  <p class="text-gray-300">
+                    <strong>A:</strong> Through Docker's internal network using
+                    service name (<span class="font-mono">backend</span>) as
+                    hostname. Docker Compose automatically creates a network and
+                    DNS so services can find each other by name.
+                  </p>
+                  <p class="text-gray-300 mt-2">
+                    <strong>Common mistake:</strong> Using
+                    <span class="font-mono">localhost</span> inside container
+                    (points to container itself, not other services).
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Summary & Next Steps -->
+      <section class="mb-12">
+        <div class="flex items-center mb-6">
+          <div
+            class="bg-gradient-to-r from-yellow-500 to-orange-400 p-3 rounded-xl mr-4"
+          >
+            <i class="fas fa-graduation-cap text-white text-2xl"></i>
+          </div>
+          <div>
+            <h2
+              class="text-2xl md:text-3xl font-bold"
+              style="
+                background: linear-gradient(90deg, #ffcc00, #ff9966);
+                -webkit-background-clip: text;
+                background-clip: text;
+                color: transparent;
+              "
+            >
+              Summary & Next Steps
+            </h2>
+            <p class="text-gray-400">
+              What you've learned and where to go next
+            </p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="card-bg rounded-2xl p-6 neon-border">
+            <h3 class="text-xl font-bold mb-4 gradient-text-blue">
+              <i class="fas fa-check-circle mr-2"></i>Key Takeaways
+            </h3>
+
+            <div class="space-y-3">
+              <div class="flex items-start">
+                <i class="fas fa-layer-group text-neon-green mt-1 mr-3"></i>
+                <div>
+                  <h5 class="font-bold mb-1">Multi-Stage Builds</h5>
+                  <p class="text-gray-300">
+                    Separate build and runtime environments for smaller, more
+                    secure images.
+                  </p>
+                </div>
+              </div>
+
+              <div class="flex items-start">
+                <i class="fas fa-bolt text-neon-blue mt-1 mr-3"></i>
+                <div>
+                  <h5 class="font-bold mb-1">Layer Caching</h5>
+                  <p class="text-gray-300">
+                    Copy package.json first to optimize Docker builds when
+                    dependencies don't change.
+                  </p>
+                </div>
+              </div>
+
+              <div class="flex items-start">
+                <i class="fas fa-network-wired text-neon-purple mt-1 mr-3"></i>
+                <div>
+                  <h5 class="font-bold mb-1">Service Discovery</h5>
+                  <p class="text-gray-300">
+                    In Docker Compose, use service names (not localhost) for
+                    inter-container communication.
+                  </p>
+                </div>
+              </div>
+
+              <div class="flex items-start">
+                <i
+                  class="fas fa-compress-arrows-alt text-neon-pink mt-1 mr-3"
+                ></i>
+                <div>
+                  <h5 class="font-bold mb-1">Lightweight Images</h5>
+                  <p class="text-gray-300">
+                    Use Alpine Linux variants and remove build dependencies from
+                    final images.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-bg rounded-2xl p-6 neon-border">
+            <h3 class="text-xl font-bold mb-4 gradient-text-purple">
+              <i class="fas fa-forward mr-2"></i>Next Level Topics
+            </h3>
+
+            <div class="space-y-4">
+              <div
+                class="flex items-center justify-between p-3 rounded-lg"
+                style="
+                  background: rgba(185, 103, 255, 0.1);
+                  border: 1px solid rgba(185, 103, 255, 0.3);
+                "
+              >
+                <div class="flex items-center">
+                  <i class="fas fa-file-alt text-neon-purple mr-3"></i>
+                  <span>Custom nginx.conf</span>
+                </div>
+                <i class="fas fa-arrow-right text-neon-purple"></i>
+              </div>
+
+              <div
+                class="flex items-center justify-between p-3 rounded-lg"
+                style="
+                  background: rgba(0, 217, 255, 0.1);
+                  border: 1px solid rgba(0, 217, 255, 0.3);
+                "
+              >
+                <div class="flex items-center">
+                  <i class="fas fa-exchange-alt text-neon-blue mr-3"></i>
+                  <span>Reverse Proxy to Backend</span>
+                </div>
+                <i class="fas fa-arrow-right text-neon-blue"></i>
+              </div>
+
+              <div
+                class="flex items-center justify-between p-3 rounded-lg"
+                style="
+                  background: rgba(0, 255, 157, 0.1);
+                  border: 1px solid rgba(0, 255, 157, 0.3);
+                "
+              >
+                <div class="flex items-center">
+                  <i class="fas fa-compress text-neon-green mr-3"></i>
+                  <span>Gzip Compression</span>
+                </div>
+                <i class="fas fa-arrow-right text-neon-green"></i>
+              </div>
+
+              <div
+                class="flex items-center justify-between p-3 rounded-lg"
+                style="
+                  background: rgba(255, 42, 109, 0.1);
+                  border: 1px solid rgba(255, 42, 109, 0.3);
+                "
+              >
+                <div class="flex items-center">
+                  <i class="fas fa-shield-alt text-neon-pink mr-3"></i>
+                  <span>HTTPS with SSL</span>
+                </div>
+                <i class="fas fa-arrow-right text-neon-pink"></i>
+              </div>
+
+              <div
+                class="flex items-center justify-between p-3 rounded-lg"
+                style="
+                  background: rgba(255, 204, 0, 0.1);
+                  border: 1px solid rgba(255, 204, 0, 0.3);
+                "
+              >
+                <div class="flex items-center">
+                  <i class="fas fa-rocket text-yellow-400 mr-3"></i>
+                  <span>Docker Compose for Full Stack</span>
+                </div>
+                <i class="fas fa-arrow-right text-yellow-400"></i>
+              </div>
+            </div>
+
+            <div class="mt-6 text-center">
+              <p class="text-lg font-bold gradient-text-blue mb-2">
+                <i class="fas fa-ship mr-2"></i>Let's Build Like a Real DevOps
+                Engineer!
+              </p>
+              <p class="text-gray-400 text-sm">
+                You now have the foundation to deploy production-ready
+                applications with Docker.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="mt-12 pt-8 border-t border-gray-800">
+      <div class="flex flex-col md:flex-row justify-between items-center">
+        <div class="mb-4 md:mb-0">
+          <p class="text-gray-400">
+            <i class="fas fa-code text-neon-blue mr-2"></i>
+            Docker & Docker Compose Complete Guide
+          </p>
+          <p class="text-sm text-gray-500">
+            Designed for learning DevOps principles with real examples
+          </p>
+        </div>
+        <div class="flex space-x-4">
+          <a
+            href="#"
+            class="w-10 h-10 rounded-full card-bg flex items-center justify-center neon-border hover:glow-hover"
+          >
+            <i class="fab fa-docker text-neon-blue"></i>
+          </a>
+          <a
+            href="#"
+            class="w-10 h-10 rounded-full card-bg flex items-center justify-center neon-border hover:glow-hover"
+          >
+            <i class="fab fa-node-js text-neon-green"></i>
+          </a>
+          <a
+            href="#"
+            class="w-10 h-10 rounded-full card-bg flex items-center justify-center neon-border hover:glow-hover"
+          >
+            <i class="fas fa-book text-neon-purple"></i>
+          </a>
+        </div>
+      </div>
+      <p class="text-center text-gray-600 text-sm mt-6">
+        Created with <i class="fas fa-heart text-red-500 mx-1"></i> for DevOps
+        learners everywhere
+      </p>
+    </footer>
+
+    <script>
+      // Add mobile menu functionality if needed
+      document.addEventListener('DOMContentLoaded', function () {
+        // Make code blocks more interactive on mobile
+        const codeBlocks = document.querySelectorAll('.code-block');
+
+        codeBlocks.forEach((block) => {
+          block.addEventListener('click', function () {
+            this.classList.toggle('active');
+          });
+        });
+
+        // Add animation to hover elements
+        const glowElements = document.querySelectorAll('.glow-hover');
+
+        glowElements.forEach((el) => {
+          el.addEventListener('mouseenter', function () {
+            this.style.transform = 'translateY(-2px)';
+          });
+
+          el.addEventListener('mouseleave', function () {
+            this.style.transform = 'translateY(0)';
+          });
+        });
+      });
+    </script>
+  </body>
+</html>
