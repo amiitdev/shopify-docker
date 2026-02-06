@@ -1,85 +1,260 @@
-# 🛍 Shopify – Production-Style Fullstack (Docker + Kubernetes)
+# 🛍 Shopify – Fullstack DevOps Deployment (Docker + Kubernetes)
 
-A full-stack e-commerce application built with **React, Node.js, Docker, and Kubernetes**, following real-world DevOps and production architecture practices.
+A production-style full-stack e-commerce application deployed using Docker and Kubernetes with CI/CD automation.
 
-This project demonstrates containerization, reverse proxy setup, Kubernetes deployments, service discovery, health monitoring, rolling updates, secret management, and CI/CD automation with Docker Hub integration.
+This project demonstrates real-world DevOps practices including containerization, reverse proxy architecture, Kubernetes orchestration, internal service discovery, health monitoring, rolling updates, resource management, secret injection, and automated Docker image publishing via GitHub Actions.
 
 ---
 
-## 🚀 Tech Stack
+# 🚀 Tech Stack
 
-### Frontend
+## Frontend
 - React (Vite)
 - Axios
-- Nginx (Production Serving)
+- Nginx (Production Serving & Reverse Proxy)
 
-### Backend
+## Backend
 - Node.js
 - Express.js
 - REST API
 - MongoDB Atlas
 
-### DevOps / Infrastructure
+## DevOps / Infrastructure
 - Docker & Docker Compose
 - Kubernetes (Minikube)
-- Nginx Reverse Proxy
-- Kubernetes Ingress
+- Kubernetes Deployments & Services
+- Ingress Controller (NGINX)
 - Liveness & Readiness Probes
+- Resource Requests & Limits
 - Kubernetes Secrets
 - GitHub Actions (CI/CD)
 - Docker Hub
 
 ---
 
-## 🏗 Architecture Overview
+# 🏗 Architecture Overview
 
-### Docker Architecture
+## 📊 System Architecture Diagram
 
-```
-Browser
-   ↓
-Nginx (Port 80)
-   ↓
-/api Reverse Proxy
-   ↓
-Backend (Internal Docker Network)
-   ↓
-MongoDB Atlas
-```
-
-### Kubernetes Architecture
-
-```
-Browser
-   ↓
-Ingress (shopify.local)
-   ↓
-Frontend Service (ClusterIP)
-   ↓
-Frontend Pod
-   ↓
-Backend Service (ClusterIP)
-   ↓
-Backend Pods (2 Replicas)
-   ↓
-MongoDB Atlas
+```mermaid
+flowchart TD
+    User[Browser User] --> Ingress[Ingress Controller<br/>shopify.local]
+    Ingress --> FrontendService[Frontend Service<br/>ClusterIP]
+    FrontendService --> FrontendPod[Frontend Pod<br/>Nginx + React]
+    FrontendPod --> BackendService[Backend Service<br/>ClusterIP]
+    BackendService --> BackendPod1[Backend Pod 1]
+    BackendService --> BackendPod2[Backend Pod 2]
+    BackendPod1 --> MongoDB[(MongoDB Atlas)]
+    BackendPod2 --> MongoDB
 ```
 
 ---
 
-## ☸ Kubernetes Setup
+## ☸ Kubernetes Resource Relationship Diagram
 
-- Backend Deployment (2 replicas)
-- Frontend Deployment
-- ClusterIP Services
-- Ingress routing (`shopify.local`)
-- Health Probes for self-healing
-- Resource requests & limits
-- Secrets injected securely (not committed to Git)
+```mermaid
+flowchart LR
+    DeploymentFE[Frontend Deployment] --> PodFE[Frontend Pod]
+    DeploymentBE[Backend Deployment] --> PodBE1[Backend Pod 1]
+    DeploymentBE --> PodBE2[Backend Pod 2]
+
+    ServiceFE[Frontend Service] --> PodFE
+    ServiceBE[Backend Service] --> PodBE1
+    ServiceBE --> PodBE2
+
+    Ingress --> ServiceFE
+```
 
 ---
 
-## 🔄 CI/CD Pipeline
+## 🐳 Docker-Level Diagram
+
+```mermaid
+flowchart TD
+    Browser --> Nginx
+    Nginx -->|/api| Backend
+    Backend --> MongoDB[(MongoDB Atlas)]
+```
+
+---
+
+# 🐳 Docker Usage
+
+## Build & Run (Development)
+
+```bash
+docker compose build
+docker compose up
+```
+
+Access:
+```
+http://localhost
+```
+
+## Run Using Docker Hub Images (Production Style)
+
+```bash
+docker pull amiitdev/shopify-backend:latest
+docker pull amiitdev/shopify-frontend:latest
+```
+
+Run backend:
+
+```bash
+docker run -p 3000:3000 --env-file server/.env amiitdev/shopify-backend:latest
+```
+
+Run frontend:
+
+```bash
+docker run -p 80:80 amiitdev/shopify-frontend:latest
+```
+
+---
+
+# ☸ Kubernetes Deployment (Minikube)
+
+## Step 1 — Start Cluster
+
+```bash
+minikube start --driver=docker
+```
+
+## Step 2 — Enable Ingress Controller
+
+```bash
+minikube addons enable ingress
+```
+
+Verify:
+
+```bash
+kubectl get pods -n ingress-nginx
+```
+
+---
+
+## Step 3 — Create Kubernetes Secret
+
+Secrets are NOT stored in Git.
+
+Create from env file:
+
+```bash
+kubectl create secret generic shopify-secret \
+  --from-env-file=server/.env
+```
+
+Verify:
+
+```bash
+kubectl get secrets
+```
+
+---
+
+## Step 4 — Apply Manifests
+
+```bash
+kubectl apply -f k8s/
+```
+
+Check resources:
+
+```bash
+kubectl get pods
+kubectl get svc
+kubectl get ingress
+```
+
+---
+
+## Step 5 — Configure Local Domain
+
+Get Minikube IP:
+
+```bash
+minikube ip
+```
+
+Edit `/etc/hosts`:
+
+```
+<minikube-ip> shopify.local
+```
+
+Access:
+
+```
+http://shopify.local
+```
+
+---
+
+# 🩺 Health Monitoring
+
+Backend exposes:
+
+```
+GET /health
+```
+
+### Readiness Probe
+- Controls when pod receives traffic
+- Prevents sending traffic to unready pods
+
+### Liveness Probe
+- Automatically restarts unhealthy containers
+- Enables self-healing behavior
+
+---
+
+# 📈 Scaling & Rolling Updates
+
+Scale backend manually:
+
+```bash
+kubectl scale deployment backend-deployment --replicas=3
+```
+
+Restart deployment:
+
+```bash
+kubectl rollout restart deployment backend-deployment
+```
+
+Check rollout status:
+
+```bash
+kubectl rollout status deployment/backend-deployment
+```
+
+---
+
+# 🔐 Security & Configuration
+
+- No secrets committed to Git
+- Kubernetes Secret used for sensitive environment variables
+- Backend exposed internally only (ClusterIP)
+- Frontend exposed via Ingress
+- Resource limits prevent resource exhaustion
+
+Example resource configuration:
+
+```yaml
+resources:
+  requests:
+    memory: "128Mi"
+    cpu: "100m"
+  limits:
+    memory: "256Mi"
+    cpu: "500m"
+```
+
+---
+
+# 🔄 CI/CD Pipeline
 
 Workflow location:
 
@@ -88,12 +263,15 @@ Workflow location:
 ```
 
 On every push to `master`:
-- Builds backend Docker image
-- Builds frontend Docker image
-- Pushes images to Docker Hub
-- Ready for Kubernetes deployment
 
-Docker Images:
+1. GitHub Actions runner starts
+2. Backend Docker image built
+3. Frontend Docker image built
+4. Images pushed to Docker Hub
+5. Ready for Kubernetes deployment
+
+Images:
+
 ```
 amiitdev/shopify-backend:latest
 amiitdev/shopify-frontend:latest
@@ -101,56 +279,7 @@ amiitdev/shopify-frontend:latest
 
 ---
 
-## 🧪 Run Locally (Docker)
-
-```bash
-docker compose build
-docker compose up
-```
-
-Open:
-```
-http://localhost
-```
-
----
-
-## ☸ Deploy on Kubernetes (Minikube)
-
-```bash
-minikube start --driver=docker
-minikube addons enable ingress
-kubectl apply -f k8s/
-```
-
-Add to `/etc/hosts`:
-
-```
-<minikube-ip> shopify.local
-```
-
-Access:
-```
-http://shopify.local
-```
-
----
-
-## 🩺 Health Monitoring
-
-Backend exposes:
-```
-GET /health
-```
-
-Kubernetes:
-- Uses Readiness Probe to control traffic
-- Uses Liveness Probe to auto-restart unhealthy pods
-- Enables zero-downtime rolling updates
-
----
-
-## 📦 Project Structure
+# 📂 Project Structure
 
 ```
 client/
@@ -163,19 +292,23 @@ README.md
 
 ---
 
-## 🎯 What This Project Demonstrates
+# 🎯 What This Project Demonstrates
 
-- Docker multi-stage builds  
-- Reverse proxy architecture  
-- Kubernetes deployments & services  
-- Ingress-based routing  
-- Service discovery via ClusterIP  
-- Health checks & self-healing  
-- Secure secret management  
-- Rolling updates without downtime  
-- CI/CD automation with GitHub Actions  
+- Docker multi-stage builds
+- Reverse proxy architecture
+- Kubernetes Deployments & Services
+- Internal DNS-based service discovery
+- Ingress routing with custom domain
+- Health probes & self-healing pods
+- Resource management
+- Rolling updates without downtime
+- Secure secret management
+- CI/CD automation with GitHub Actions
+- Docker Hub registry integration
 
 ---
 
-**Author:** Amit Kumar  
+# 👨‍💻 Author
+
+Amit Kumar  
 DevOps / Fullstack Engineer
