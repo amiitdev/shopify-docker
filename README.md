@@ -34,47 +34,50 @@ This project demonstrates real-world DevOps practices including containerization
 
 # 🏗 Architecture Overview
 
-## 📊 System Architecture Diagram
+## 1️⃣ Docker Architecture (Container Level)
 
-```mermaid
-flowchart TD
-    User[Browser User] --> Ingress[Ingress Controller<br/>shopify.local]
-    Ingress --> FrontendService[Frontend Service<br/>ClusterIP]
-    FrontendService --> FrontendPod[Frontend Pod<br/>Nginx + React]
-    FrontendPod --> BackendService[Backend Service<br/>ClusterIP]
-    BackendService --> BackendPod1[Backend Pod 1]
-    BackendService --> BackendPod2[Backend Pod 2]
-    BackendPod1 --> MongoDB[(MongoDB Atlas)]
-    BackendPod2 --> MongoDB
 ```
+Browser
+   ↓
+Nginx (Port 80)
+   ↓
+/api Reverse Proxy
+   ↓
+Backend Container (Internal Docker Network)
+   ↓
+MongoDB Atlas
+```
+
+- Backend port is NOT exposed publicly
+- All API traffic flows through Nginx
+- Containers communicate via Docker internal DNS
 
 ---
 
-## ☸ Kubernetes Resource Relationship Diagram
+## 2️⃣ Kubernetes Architecture (Cluster Level)
 
-```mermaid
-flowchart LR
-    DeploymentFE[Frontend Deployment] --> PodFE[Frontend Pod]
-    DeploymentBE[Backend Deployment] --> PodBE1[Backend Pod 1]
-    DeploymentBE --> PodBE2[Backend Pod 2]
-
-    ServiceFE[Frontend Service] --> PodFE
-    ServiceBE[Backend Service] --> PodBE1
-    ServiceBE --> PodBE2
-
-    Ingress --> ServiceFE
+```
+Browser
+   ↓
+Ingress (shopify.local)
+   ↓
+Frontend Service (ClusterIP)
+   ↓
+Frontend Pod
+   ↓
+Backend Service (ClusterIP)
+   ↓
+Backend Pods (2 Replicas)
+   ↓
+MongoDB Atlas
 ```
 
----
-
-## 🐳 Docker-Level Diagram
-
-```mermaid
-flowchart TD
-    Browser --> Nginx
-    Nginx -->|/api| Backend
-    Backend --> MongoDB[(MongoDB Atlas)]
-```
+### Key Concepts Used:
+- ClusterIP for internal service discovery
+- Ingress for external routing
+- Multi-replica backend for high availability
+- Health probes for self-healing
+- Rolling updates for zero downtime
 
 ---
 
