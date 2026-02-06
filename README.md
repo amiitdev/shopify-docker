@@ -1,8 +1,8 @@
-# 🛍 Shopify Docker – Production-Style Fullstack Setup
+# 🛍 Shopify – Production-Style Fullstack (Docker + Kubernetes)
 
-A full-stack e-commerce application containerized using Docker with a production-ready architecture and automated CI/CD pipeline.
+A full-stack e-commerce application built with **React, Node.js, Docker, and Kubernetes**, following real-world DevOps and production architecture practices.
 
-This project demonstrates real-world DevOps practices including multi-stage Docker builds, Nginx reverse proxy, internal container networking, health monitoring, secure environment configuration, SSH-based Git workflow, GitHub Actions CI/CD automation, and automatic Docker image publishing to Docker Hub.
+This project demonstrates containerization, reverse proxy setup, Kubernetes deployments, service discovery, health monitoring, rolling updates, secret management, and CI/CD automation with Docker Hub integration.
 
 ---
 
@@ -17,96 +17,65 @@ This project demonstrates real-world DevOps practices including multi-stage Dock
 - Node.js
 - Express.js
 - REST API
-- MongoDB
+- MongoDB Atlas
 
 ### DevOps / Infrastructure
-- Docker
-- Docker Compose
+- Docker & Docker Compose
+- Kubernetes (Minikube)
 - Nginx Reverse Proxy
-- Healthchecks
-- GitHub Actions
+- Kubernetes Ingress
+- Liveness & Readiness Probes
+- Kubernetes Secrets
+- GitHub Actions (CI/CD)
 - Docker Hub
 
 ---
 
 ## 🏗 Architecture Overview
 
+### Docker Architecture
+
 ```
 Browser
    ↓
-Nginx (Port 80 / 443)
+Nginx (Port 80)
    ↓
 /api Reverse Proxy
    ↓
 Backend (Internal Docker Network)
+   ↓
+MongoDB Atlas
 ```
 
-### CI/CD Flow
+### Kubernetes Architecture
 
 ```
-Developer Pushes Code
-        ↓
-GitHub Actions Triggered
-        ↓
-Backend Image Built
-Frontend Image Built
-        ↓
-Images Pushed to Docker Hub
-        ↓
-Ready for Deployment
-```
-
----
-
-## 🔐 Key Design Decisions
-
-- Backend port is **NOT exposed publicly**
-- All traffic flows through Nginx
-- `/api` requests are reverse proxied internally
-- Containers communicate using Docker internal DNS
-- Build stage and runtime stage are separated
-- Environment variables injected at runtime
-- No secrets stored inside Docker images
-
----
-
-## 🐳 Run Locally (Development Mode)
-
-Build and start using docker-compose:
-
-```bash
-docker compose build
-docker compose up
-```
-
-Open in browser:
-
-```
-http://localhost
+Browser
+   ↓
+Ingress (shopify.local)
+   ↓
+Frontend Service (ClusterIP)
+   ↓
+Frontend Pod
+   ↓
+Backend Service (ClusterIP)
+   ↓
+Backend Pods (2 Replicas)
+   ↓
+MongoDB Atlas
 ```
 
 ---
 
-## 🧪 Run Using Docker Hub Images (Production Style)
+## ☸ Kubernetes Setup
 
-Pull images built by CI/CD:
-
-```bash
-docker pull amiitdev/shopify-backend:latest
-docker pull amiitdev/shopify-frontend:latest
-```
-
-Run backend with environment variables:
-
-```bash
-docker run -p 3000:3000 --env-file server/.env amiitdev/shopify-backend:latest
-```
-
-Run frontend:
-
-```bash
-docker run -p 80:80 amiitdev/shopify-frontend:latest
-```
+- Backend Deployment (2 replicas)
+- Frontend Deployment
+- ClusterIP Services
+- Ingress routing (`shopify.local`)
+- Health Probes for self-healing
+- Resource requests & limits
+- Secrets injected securely (not committed to Git)
 
 ---
 
@@ -118,37 +87,66 @@ Workflow location:
 .github/workflows/docker-cicd.yml
 ```
 
-Trigger condition:
+On every push to `master`:
+- Builds backend Docker image
+- Builds frontend Docker image
+- Pushes images to Docker Hub
+- Ready for Kubernetes deployment
 
-```yaml
-on:
-  push:
-    branches:
-      - master
+Docker Images:
 ```
-
-Every push to `master` automatically:
-
-1. Creates fresh Ubuntu runner  
-2. Checks out repository  
-3. Logs into Docker Hub securely  
-4. Builds backend Docker image  
-5. Builds frontend Docker image  
-6. Pushes both images to Docker Hub  
-
-No manual `docker build` or `docker push` required.
+amiitdev/shopify-backend:latest
+amiitdev/shopify-frontend:latest
+```
 
 ---
 
-## 🩺 Healthcheck
+## 🧪 Run Locally (Docker)
 
-Backend includes:
+```bash
+docker compose build
+docker compose up
+```
 
-```http
+Open:
+```
+http://localhost
+```
+
+---
+
+## ☸ Deploy on Kubernetes (Minikube)
+
+```bash
+minikube start --driver=docker
+minikube addons enable ingress
+kubectl apply -f k8s/
+```
+
+Add to `/etc/hosts`:
+
+```
+<minikube-ip> shopify.local
+```
+
+Access:
+```
+http://shopify.local
+```
+
+---
+
+## 🩺 Health Monitoring
+
+Backend exposes:
+```
 GET /health
 ```
 
-Docker monitors container health automatically.
+Kubernetes:
+- Uses Readiness Probe to control traffic
+- Uses Liveness Probe to auto-restart unhealthy pods
+- Enables zero-downtime rolling updates
 
 ---
 
@@ -156,16 +154,9 @@ Docker monitors container health automatically.
 
 ```
 client/
-  ├── Dockerfile
-  ├── nginx.conf
-  └── src/
-
 server/
-  ├── Dockerfile
-  ├── api/
-  └── .dockerignore
-
-.github/workflows/docker-cicd.yml
+k8s/
+.github/workflows/
 docker-compose.yml
 README.md
 ```
@@ -176,15 +167,15 @@ README.md
 
 - Docker multi-stage builds  
 - Reverse proxy architecture  
-- Secure container networking  
-- Separation of configuration from code  
+- Kubernetes deployments & services  
+- Ingress-based routing  
+- Service discovery via ClusterIP  
+- Health checks & self-healing  
+- Secure secret management  
+- Rolling updates without downtime  
 - CI/CD automation with GitHub Actions  
-- Docker Hub registry integration  
-- Production-ready container workflow  
 
 ---
 
-## 👨‍💻 Author
-
-Amit Kumar  
-DevOps / Fullstack Developer
+**Author:** Amit Kumar  
+DevOps / Fullstack Engineer
