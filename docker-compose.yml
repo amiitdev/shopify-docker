@@ -1,26 +1,50 @@
+# services:
+#   backend:
+#     build: ./server
+#     env_file:
+#       - ./server/.env
+#     ports:
+#       - '3000:3000'
+#     restart: unless-stopped
+#     healthcheck:
+#       test: ['CMD', 'wget', '--spider', '-q', 'http://localhost:3000/health']
+#       interval: 30s
+#       timeout: 5s
+#       retries: 3
 
-# Build stage
-FROM node:20-alpine as build
+#   frontend:
+#     build:
+#       context: ./client
 
-WORKDIR /app
+#     ports:
+#       - '8080:80'
+#     depends_on:
+#       - backend
+#     restart: unless-stopped
 
-COPY package*.json ./
-RUN npm install
+services:
+  backend:
+    build: ./server
+    container_name: shopify-backend
+    env_file:
+      - ./server/.env
+    ports:
+      - '3000:3000'
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD', 'wget', '--spider', '-q', 'http://localhost:3000/health']
+      interval: 30s
+      timeout: 5s
+      retries: 3
 
-COPY . .
-
-ARG VITE_API_URL
-ENV VITE_API_URL=$VITE_API_URL
-
-RUN npm run build
-
-# Production stage
-FROM nginx:alpine
-
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-COPY --from=build /app/dist /usr/share/nginx/html
-
-
-EXPOSE 80
-
-CMD ["nginx", "-g", "daemon off;"]
+  frontend:
+    build:
+      context: ./client
+      args:
+        VITE_API_URL: ''
+    container_name: shopify-frontend
+    ports:
+      - '8080:80'
+    depends_on:
+      - backend
+    restart: unless-stopped
