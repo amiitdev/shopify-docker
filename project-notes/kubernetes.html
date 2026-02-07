@@ -1,0 +1,2014 @@
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kubernetes DevOps Complete Guide</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600&family=Inter:wght@300;400;500;600;700&display=swap');
+
+      * {
+        font-family: 'Inter', sans-serif;
+      }
+
+      code,
+      pre {
+        font-family: 'Fira Code', monospace !important;
+      }
+
+      :root {
+        --neon-blue: #00d9ff;
+        --neon-purple: #b967ff;
+        --neon-pink: #ff2a6d;
+        --neon-green: #00ff9d;
+        --dark-bg: #0a0a0f;
+        --darker-bg: #050508;
+        --card-bg: #11111f;
+        --border-glow: rgba(0, 217, 255, 0.2);
+      }
+
+      body {
+        background-color: var(--dark-bg);
+        color: #e2e8f0;
+        background-image:
+          radial-gradient(
+            circle at 10% 20%,
+            rgba(185, 103, 255, 0.05) 0%,
+            transparent 20%
+          ),
+          radial-gradient(
+            circle at 90% 80%,
+            rgba(0, 217, 255, 0.05) 0%,
+            transparent 20%
+          );
+        min-height: 100vh;
+      }
+
+      .neon-border {
+        border: 1px solid rgba(0, 217, 255, 0.3);
+        box-shadow:
+          0 0 15px rgba(0, 217, 255, 0.1),
+          inset 0 0 15px rgba(0, 217, 255, 0.05);
+      }
+
+      .gradient-text-blue {
+        background: linear-gradient(90deg, var(--neon-blue), #0099ff);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+
+      .gradient-text-purple {
+        background: linear-gradient(90deg, var(--neon-purple), #ff00ff);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+
+      .gradient-text-pink {
+        background: linear-gradient(90deg, var(--neon-pink), #ff0066);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+
+      .gradient-text-green {
+        background: linear-gradient(90deg, var(--neon-green), #00cc88);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+
+      .card-bg {
+        background-color: var(--card-bg);
+        backdrop-filter: blur(10px);
+      }
+
+      .code-block {
+        background-color: var(--darker-bg);
+        border-left: 4px solid var(--neon-blue);
+        position: relative;
+      }
+
+      .yaml-key {
+        color: var(--neon-purple);
+      }
+
+      .yaml-value {
+        color: var(--neon-green);
+      }
+
+      .yaml-string {
+        color: #ffcc00;
+      }
+
+      .yaml-comment {
+        color: #6b7280;
+      }
+
+      .terminal-line {
+        position: relative;
+      }
+
+      .terminal-line::before {
+        content: '$';
+        position: absolute;
+        left: -1.5rem;
+        color: var(--neon-green);
+      }
+
+      .note-tip {
+        border-left: 4px solid var(--neon-green);
+        background-color: rgba(0, 255, 157, 0.05);
+      }
+
+      .note-warning {
+        border-left: 4px solid var(--neon-pink);
+        background-color: rgba(255, 42, 109, 0.05);
+      }
+
+      .note-info {
+        border-left: 4px solid var(--neon-blue);
+        background-color: rgba(0, 217, 255, 0.05);
+      }
+
+      .note-important {
+        border-left: 4px solid var(--neon-purple);
+        background-color: rgba(185, 103, 255, 0.05);
+      }
+
+      .kubernetes-flow {
+        position: relative;
+        overflow: hidden;
+      }
+
+      .kubernetes-flow::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(
+          45deg,
+          transparent 95%,
+          rgba(0, 217, 255, 0.03) 100%
+        );
+        pointer-events: none;
+      }
+
+      .k8s-badge {
+        display: inline-block;
+        background: linear-gradient(45deg, #326ce5, #1e4fd8);
+        color: white;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        font-family: 'Fira Code', monospace;
+      }
+
+      .architecture-box {
+        transition: all 0.3s ease;
+      }
+
+      .architecture-box:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(0, 217, 255, 0.2);
+      }
+
+      @media (max-width: 768px) {
+        .mobile-stack {
+          flex-direction: column;
+        }
+
+        .code-block {
+          font-size: 0.85rem;
+          overflow-x: auto;
+        }
+      }
+    </style>
+  </head>
+  <body class="p-4 md:p-6 lg:p-8">
+    <!-- Header Section -->
+    <header class="mb-10 md:mb-12">
+      <div
+        class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4"
+      >
+        <div>
+          <h1
+            class="text-3xl md:text-4xl lg:text-5xl font-bold mb-2 gradient-text-blue"
+          >
+            <i class="fab fa-kubernetes section-icon"></i>Kubernetes DevOps
+            Complete Guide
+          </h1>
+          <p class="text-lg text-gray-300">
+            From Error to Production Deployment - Every Step Explained
+          </p>
+        </div>
+        <div class="flex items-center space-x-2">
+          <span
+            class="px-3 py-1 rounded-full text-sm font-medium card-bg neon-border"
+          >
+            <i class="fas fa-bug text-neon-pink mr-1"></i> Debugging
+          </span>
+          <span
+            class="px-3 py-1 rounded-full text-sm font-medium card-bg neon-border"
+          >
+            <i class="fas fa-network-wired text-neon-purple mr-1"></i>
+            Networking
+          </span>
+          <span
+            class="px-3 py-1 rounded-full text-sm font-medium card-bg neon-border"
+          >
+            <i class="fas fa-rocket text-neon-green mr-1"></i> Production
+          </span>
+        </div>
+      </div>
+
+      <div class="card-bg rounded-2xl p-6 neon-border mb-8">
+        <div class="flex items-center mb-4">
+          <i class="fas fa-fire text-neon-pink text-2xl mr-4"></i>
+          <div>
+            <h3 class="text-xl font-bold gradient-text-pink">
+              Your Journey Today
+            </h3>
+            <p class="text-gray-400">
+              From broken cluster to production-grade Kubernetes deployment
+            </p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div
+            class="text-center p-4 rounded-xl"
+            style="background: rgba(255, 42, 109, 0.1)"
+          >
+            <div
+              class="w-12 h-12 rounded-full bg-gradient-to-r from-red-500 to-pink-500 flex items-center justify-center mx-auto mb-2"
+            >
+              <i class="fas fa-times text-white"></i>
+            </div>
+            <p class="font-bold">Broken Cluster</p>
+            <p class="text-xs text-gray-400">i/o timeout</p>
+          </div>
+
+          <div
+            class="text-center p-4 rounded-xl"
+            style="background: rgba(0, 217, 255, 0.1)"
+          >
+            <div
+              class="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 flex items-center justify-center mx-auto mb-2"
+            >
+              <i class="fas fa-redo text-white"></i>
+            </div>
+            <p class="font-bold">Cluster Reset</p>
+            <p class="text-xs text-gray-400">minikube delete</p>
+          </div>
+
+          <div
+            class="text-center p-4 rounded-xl"
+            style="background: rgba(185, 103, 255, 0.1)"
+          >
+            <div
+              class="w-12 h-12 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center mx-auto mb-2"
+            >
+              <i class="fas fa-database text-white"></i>
+            </div>
+            <p class="font-bold">DNS Debugging</p>
+            <p class="text-xs text-gray-400">MongoDB SRV</p>
+          </div>
+
+          <div
+            class="text-center p-4 rounded-xl"
+            style="background: rgba(0, 255, 157, 0.1)"
+          >
+            <div
+              class="w-12 h-12 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 flex items-center justify-center mx-auto mb-2"
+            >
+              <i class="fas fa-check-circle text-white"></i>
+            </div>
+            <p class="font-bold">Production Ready</p>
+            <p class="text-xs text-gray-400">Health checks + HPA</p>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto">
+      <!-- Section 1: The Initial Error -->
+      <section class="mb-12 md:mb-16">
+        <div class="flex items-center mb-6">
+          <div
+            class="bg-gradient-to-r from-red-500 to-pink-500 p-3 rounded-xl mr-4"
+          >
+            <i class="fas fa-exclamation-triangle text-white text-2xl"></i>
+          </div>
+          <div>
+            <h2 class="text-2xl md:text-3xl font-bold gradient-text-pink">
+              The Initial Error: i/o timeout
+            </h2>
+            <p class="text-gray-400">
+              Understanding and fixing cluster connection issues
+            </p>
+          </div>
+        </div>
+
+        <div class="card-bg rounded-2xl p-6 neon-border kubernetes-flow">
+          <div class="code-block rounded-lg p-4 mb-6">
+            <div class="flex items-center mb-4">
+              <div class="h-3 w-3 rounded-full bg-red-500 mr-2"></div>
+              <div class="h-3 w-3 rounded-full bg-yellow-500 mr-2"></div>
+              <div class="h-3 w-3 rounded-full bg-green-500 mr-2"></div>
+              <span class="text-sm text-gray-400 ml-2">Error Output</span>
+            </div>
+
+            <pre
+              class="text-sm"
+            ><code>error: error validating "k8s/secret.yaml": error validating data: 
+failed to download openapi: Get "https://192.168.49.2:8443/openapi/v2?timeout=32s": 
+dial tcp 192.168.49.2:8443: i/o timeout</code></pre>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div>
+              <h4 class="font-bold text-lg mb-3 gradient-text-blue">
+                What This Error Really Means
+              </h4>
+
+              <div class="space-y-4">
+                <div class="note-warning p-4 rounded-lg">
+                  <div class="flex items-start">
+                    <i class="fas fa-unlink text-neon-pink mt-1 mr-3"></i>
+                    <div>
+                      <h5 class="font-bold mb-1">
+                        kubectl Cannot Reach Kubernetes API
+                      </h5>
+                      <p class="text-gray-300">
+                        That IP
+                        <span class="font-mono bg-gray-800 px-2 py-1 rounded"
+                          >192.168.49.2:8443</span
+                        >
+                        is your Minikube API server. kubectl tried to connect
+                        but got timeout.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="note-info p-4 rounded-lg">
+                  <div class="flex items-start">
+                    <i class="fas fa-search text-neon-blue mt-1 mr-3"></i>
+                    <div>
+                      <h5 class="font-bold mb-1">Why This Happens</h5>
+                      <ul class="list-disc pl-5 text-gray-300 space-y-1">
+                        <li>Minikube container was deleted/crashed</li>
+                        <li>Docker was restarted</li>
+                        <li>System rebooted without restoring cluster</li>
+                        <li>kubeconfig points to dead cluster</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h4 class="font-bold text-lg mb-3 gradient-text-green">
+                The Diagnostic Process
+              </h4>
+
+              <div class="space-y-4">
+                <div>
+                  <h5 class="font-bold mb-2">Step 1: Check Cluster Status</h5>
+                  <div class="code-block rounded p-3 mb-2">
+                    <div class="terminal-line pl-6">
+                      <code>kubectl cluster-info</code>
+                    </div>
+                  </div>
+                  <p class="text-sm text-gray-400">
+                    This failed → cluster is down
+                  </p>
+                </div>
+
+                <div>
+                  <h5 class="font-bold mb-2">Step 2: Check Minikube Status</h5>
+                  <div class="code-block rounded p-3 mb-2">
+                    <div class="terminal-line pl-6">
+                      <code>minikube status</code>
+                    </div>
+                  </div>
+                  <div class="code-block rounded p-3">
+                    <div class="text-red-400">
+                      Error response from daemon: No such container: minikube
+                    </div>
+                  </div>
+                  <p class="text-sm text-gray-400 mt-1">
+                    Key line: Minikube container doesn't exist
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Fix Process -->
+          <div
+            class="mt-8 p-6 rounded-xl"
+            style="background: rgba(11, 15, 25, 0.8)"
+          >
+            <h4 class="font-bold text-lg mb-4 gradient-text-purple text-center">
+              <i class="fas fa-wrench mr-2"></i>The Fix: Complete Cluster Reset
+            </h4>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div class="text-center">
+                <div
+                  class="w-16 h-16 rounded-full bg-gradient-to-r from-red-500 to-orange-500 flex items-center justify-center mx-auto mb-2"
+                >
+                  <i class="fas fa-trash text-white text-2xl"></i>
+                </div>
+                <p class="font-bold">Delete Broken Cluster</p>
+                <div class="code-block rounded p-2 mt-2">
+                  <div class="terminal-line pl-6">
+                    <code class="text-xs">minikube delete</code>
+                  </div>
+                </div>
+              </div>
+
+              <div class="text-center">
+                <div
+                  class="w-16 h-16 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 flex items-center justify-center mx-auto mb-2"
+                >
+                  <i class="fas fa-play text-white text-2xl"></i>
+                </div>
+                <p class="font-bold">Start Fresh</p>
+                <div class="code-block rounded p-2 mt-2">
+                  <div class="terminal-line pl-6">
+                    <code class="text-xs">minikube start --driver=docker</code>
+                  </div>
+                </div>
+              </div>
+
+              <div class="text-center">
+                <div
+                  class="w-16 h-16 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 flex items-center justify-center mx-auto mb-2"
+                >
+                  <i class="fas fa-check-circle text-white text-2xl"></i>
+                </div>
+                <p class="font-bold">Verify</p>
+                <div class="code-block rounded p-2 mt-2">
+                  <div class="terminal-line pl-6">
+                    <code class="text-xs">kubectl cluster-info</code>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 2: Secret Configuration Issues -->
+      <section class="mb-12 md:mb-16">
+        <div class="flex items-center mb-6">
+          <div
+            class="bg-gradient-to-r from-purple-500 to-pink-400 p-3 rounded-xl mr-4"
+          >
+            <i class="fas fa-user-secret text-white text-2xl"></i>
+          </div>
+          <div>
+            <h2 class="text-2xl md:text-3xl font-bold gradient-text-purple">
+              Secret Configuration Issues
+            </h2>
+            <p class="text-gray-400">
+              Proper YAML formatting and security considerations
+            </p>
+          </div>
+        </div>
+
+        <div class="card-bg rounded-2xl p-6 neon-border">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <div>
+              <h4 class="font-bold text-lg mb-3 gradient-text-pink">
+                ❌ Wrong YAML Format
+              </h4>
+
+              <div class="code-block rounded-lg p-4 mb-4">
+                <pre
+                  class="text-sm"
+                ><code><span class="yaml-key">apiVersion</span>: <span class="yaml-value">v1</span>
+<span class="yaml-key">kind</span>: <span class="yaml-string">Secret</span>
+<span class="yaml-key">metadata</span>:
+  <span class="yaml-key">name</span>: <span class="yaml-string">shopify-secret</span>
+<span class="yaml-key">type</span>: <span class="yaml-string">Opaque</span>
+<span class="yaml-key">stringData</span>:
+  <span class="yaml-key">MONGO_URI</span>=<span class="yaml-string">"mongodb+srv://user:pass@cluster0.mongodb.net/db"</span>
+  <span class="yaml-key">JWT_SECRET</span>=<span class="yaml-string">"amit1234"</span></code></pre>
+              </div>
+
+              <div class="note-warning p-4 rounded-lg">
+                <div class="flex items-start">
+                  <i class="fas fa-times-circle text-neon-pink mt-1 mr-3"></i>
+                  <div>
+                    <h5 class="font-bold mb-1">Multiple Issues Here</h5>
+                    <ul class="list-disc pl-5 text-gray-300 space-y-1">
+                      <li>
+                        <span class="font-mono bg-gray-800 px-2 py-1 rounded"
+                          >=</span
+                        >
+                        instead of
+                        <span class="font-mono bg-gray-800 px-2 py-1 rounded"
+                          >:</span
+                        >
+                      </li>
+                      <li>Quotes around entire value</li>
+                      <li>Wrong indentation</li>
+                      <li>Real credentials exposed</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h4 class="font-bold text-lg mb-3 gradient-text-green">
+                ✅ Correct YAML Format
+              </h4>
+
+              <div class="code-block rounded-lg p-4 mb-4">
+                <pre
+                  class="text-sm"
+                ><code><span class="yaml-key">apiVersion</span>: <span class="yaml-value">v1</span>
+<span class="yaml-key">kind</span>: <span class="yaml-string">Secret</span>
+<span class="yaml-key">metadata</span>:
+  <span class="yaml-key">name</span>: <span class="yaml-string">shopify-secret</span>
+<span class="yaml-key">type</span>: <span class="yaml-string">Opaque</span>
+<span class="yaml-key">stringData</span>:
+  <span class="yaml-key">MONGO_URI</span>: <span class="yaml-string">mongodb+srv://username:password@cluster0.mongodb.net/db</span>
+  <span class="yaml-key">JWT_SECRET</span>: <span class="yaml-string">amit1234</span>
+  <span class="yaml-key">CLOUD_NAME</span>: <span class="yaml-string">ddqbojx2m</span>
+  <span class="yaml-key">CLOUD_API_KEY</span>: <span class="yaml-string">"351755929552999"</span>
+  <span class="yaml-key">CLOUD_API_SECRET</span>: <span class="yaml-string">bQhit41K05mwRfdkUzu25p68znw</span></code></pre>
+              </div>
+
+              <div class="note-tip p-4 rounded-lg">
+                <div class="flex items-start">
+                  <i class="fas fa-check-circle text-neon-green mt-1 mr-3"></i>
+                  <div>
+                    <h5 class="font-bold mb-1">Key Differences</h5>
+                    <ul class="list-disc pl-5 text-gray-300 space-y-1">
+                      <li>
+                        Use
+                        <span class="font-mono bg-gray-800 px-2 py-1 rounded"
+                          >:</span
+                        >
+                        not
+                        <span class="font-mono bg-gray-800 px-2 py-1 rounded"
+                          >=</span
+                        >
+                      </li>
+                      <li>No quotes around URI (unless special characters)</li>
+                      <li>Proper indentation (2 spaces)</li>
+                      <li>Number values can be quoted</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Critical Security Warning -->
+          <div class="note-warning p-4 rounded-lg">
+            <div class="flex items-start">
+              <i class="fas fa-shield-alt text-neon-pink text-xl mt-1 mr-3"></i>
+              <div>
+                <h5 class="font-bold mb-2 text-xl gradient-text-pink">
+                  ⚠️ CRITICAL SECURITY WARNING ⚠️
+                </h5>
+                <p class="text-gray-300 mb-3">
+                  You exposed real credentials publicly:
+                </p>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
+                  <div class="p-3 rounded bg-gray-800">
+                    <p class="font-bold text-red-400">MongoDB Password</p>
+                    <p class="text-sm text-gray-400">Full access to database</p>
+                  </div>
+                  <div class="p-3 rounded bg-gray-800">
+                    <p class="font-bold text-red-400">JWT Secret</p>
+                    <p class="text-sm text-gray-400">Authentication bypass</p>
+                  </div>
+                  <div class="p-3 rounded bg-gray-800">
+                    <p class="font-bold text-red-400">Cloudinary API</p>
+                    <p class="text-sm text-gray-400">
+                      Image upload/delete access
+                    </p>
+                  </div>
+                </div>
+
+                <div class="note-important p-3 rounded-lg">
+                  <div class="flex items-start">
+                    <i
+                      class="fas fa-exclamation-circle text-neon-purple mt-1 mr-2"
+                    ></i>
+                    <div>
+                      <p class="font-bold">Immediate Actions Required</p>
+                      <ul
+                        class="list-disc pl-5 text-sm text-gray-300 mt-1 space-y-1"
+                      >
+                        <li>Change MongoDB Atlas password NOW</li>
+                        <li>Regenerate Cloudinary API keys</li>
+                        <li>
+                          Rotate JWT secret (all users will need to re-login)
+                        </li>
+                        <li>Use GitHub Secrets for CI/CD</li>
+                        <li>Never commit real credentials to Git</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 3: MongoDB DNS SRV Issue -->
+      <section class="mb-12 md:mb-16">
+        <div class="flex items-center mb-6">
+          <div
+            class="bg-gradient-to-r from-blue-500 to-cyan-400 p-3 rounded-xl mr-4"
+          >
+            <i class="fas fa-database text-white text-2xl"></i>
+          </div>
+          <div>
+            <h2 class="text-2xl md:text-3xl font-bold gradient-text-blue">
+              MongoDB DNS SRV Issue
+            </h2>
+            <p class="text-gray-400">
+              Why it worked locally but failed in Kubernetes
+            </p>
+          </div>
+        </div>
+
+        <div class="card-bg rounded-2xl p-6 neon-border kubernetes-flow">
+          <div class="code-block rounded-lg p-4 mb-6">
+            <div class="flex items-center mb-2">
+              <div class="h-3 w-3 rounded-full bg-red-500 mr-2"></div>
+              <div class="h-3 w-3 rounded-full bg-yellow-500 mr-2"></div>
+              <div class="h-3 w-3 rounded-full bg-green-500 mr-2"></div>
+              <span class="text-sm text-gray-400 ml-2">Backend Logs</span>
+            </div>
+
+            <pre class="text-sm"><code>Server is running on 3000
+MongoDB connection failed: Error: querySrv ENOTFOUND _mongodb._tcp.cluster0.mongodb.net
+    at QueryReqWrap.onresolve [as oncomplete] (node:internal/dns/promises:292:17) {
+  errno: undefined,
+  code: 'ENOTFOUND',
+  syscall: 'querySrv',
+  hostname: '_mongodb._tcp.cluster0.mongodb.net'
+}</code></pre>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div>
+              <h4 class="font-bold text-lg mb-3 gradient-text-purple">
+                Understanding The Problem
+              </h4>
+
+              <div class="space-y-4">
+                <div class="note-info p-4 rounded-lg">
+                  <div class="flex items-start">
+                    <i class="fas fa-globe text-neon-blue mt-1 mr-3"></i>
+                    <div>
+                      <h5 class="font-bold mb-1">
+                        Two Different Connection Strings
+                      </h5>
+                      <div class="grid grid-cols-2 gap-2 mt-2">
+                        <div class="text-center p-2 rounded bg-gray-800">
+                          <p class="font-bold text-sm">SRV</p>
+                          <p class="text-xs">mongodb+srv://</p>
+                        </div>
+                        <div class="text-center p-2 rounded bg-gray-800">
+                          <p class="font-bold text-sm">Standard</p>
+                          <p class="text-xs">mongodb://</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <h5 class="font-bold mb-2">SRV Record Requirement</h5>
+                  <p class="text-gray-300 mb-2">
+                    <span class="font-mono">mongodb+srv://</span> requires DNS
+                    SRV record lookup for:
+                  </p>
+                  <div class="code-block rounded p-2">
+                    <code class="text-xs"
+                      >_mongodb._tcp.cluster0.mongodb.net</code
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h4 class="font-bold text-lg mb-3 gradient-text-green">
+                Why It Worked Locally But Failed in K8s
+              </h4>
+
+              <div class="grid grid-cols-2 gap-4">
+                <div
+                  class="p-4 rounded-xl"
+                  style="background: rgba(0, 255, 157, 0.1)"
+                >
+                  <div
+                    class="w-12 h-12 rounded-full bg-green-500 flex items-center justify-center mx-auto mb-2"
+                  >
+                    <i class="fas fa-laptop text-white"></i>
+                  </div>
+                  <p class="font-bold text-center">Local Machine</p>
+                  <ul class="text-xs text-gray-300 mt-2 space-y-1">
+                    <li>Uses OS DNS resolver</li>
+                    <li>SRV records work</li>
+                    <li>Direct internet access</li>
+                    <li>✅ Works</li>
+                  </ul>
+                </div>
+
+                <div
+                  class="p-4 rounded-xl"
+                  style="background: rgba(255, 42, 109, 0.1)"
+                >
+                  <div
+                    class="w-12 h-12 rounded-full bg-red-500 flex items-center justify-center mx-auto mb-2"
+                  >
+                    <i class="fas fa-cube text-white"></i>
+                  </div>
+                  <p class="font-bold text-center">Kubernetes Pod</p>
+                  <ul class="text-xs text-gray-300 mt-2 space-y-1">
+                    <li>Uses CoreDNS</li>
+                    <li>SRV sometimes fails</li>
+                    <li>Network policies</li>
+                    <li>❌ ENOTFOUND</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div class="mt-4 note-tip p-4 rounded-lg">
+                <div class="flex items-start">
+                  <i class="fas fa-lightbulb text-neon-green mt-1 mr-3"></i>
+                  <div>
+                    <p class="font-bold mb-1">The Professional Fix</p>
+                    <p class="text-gray-300">
+                      Use standard connection string from MongoDB Atlas (without
+                      +srv). Works everywhere.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Getting Standard Connection String -->
+          <div
+            class="mt-8 p-6 rounded-xl"
+            style="background: rgba(11, 15, 25, 0.8)"
+          >
+            <h4 class="font-bold text-lg mb-4 gradient-text-blue text-center">
+              <i class="fas fa-link mr-2"></i>How To Get Standard MongoDB URI
+            </h4>
+
+            <div
+              class="flex flex-col md:flex-row items-center justify-center gap-6"
+            >
+              <div class="text-center">
+                <div
+                  class="w-16 h-16 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 flex items-center justify-center mb-2"
+                >
+                  <span class="text-white font-bold">1</span>
+                </div>
+                <p class="text-sm">Go to MongoDB Atlas</p>
+                <p class="text-xs text-gray-400">Connect → Drivers</p>
+              </div>
+
+              <div class="text-center">
+                <i class="fas fa-arrow-right text-neon-purple text-xl"></i>
+              </div>
+
+              <div class="text-center">
+                <div
+                  class="w-16 h-16 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center mb-2"
+                >
+                  <span class="text-white font-bold">2</span>
+                </div>
+                <p class="text-sm">Select Node.js Driver</p>
+                <p class="text-xs text-gray-400">Version 4.1 or later</p>
+              </div>
+
+              <div class="text-center">
+                <i class="fas fa-arrow-right text-neon-purple text-xl"></i>
+              </div>
+
+              <div class="text-center">
+                <div
+                  class="w-16 h-16 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 flex items-center justify-center mb-2"
+                >
+                  <span class="text-white font-bold">3</span>
+                </div>
+                <p class="text-sm">Choose "Standard"</p>
+                <p class="text-xs text-gray-400">Not "SRV" connection</p>
+              </div>
+
+              <div class="text-center">
+                <i class="fas fa-arrow-right text-neon-purple text-xl"></i>
+              </div>
+
+              <div class="text-center">
+                <div
+                  class="w-16 h-16 rounded-full bg-gradient-to-r from-yellow-500 to-orange-500 flex items-center justify-center mb-2"
+                >
+                  <span class="text-white font-bold">4</span>
+                </div>
+                <p class="text-sm">Copy URI</p>
+                <p class="text-xs text-gray-400">Starts with mongodb://</p>
+              </div>
+            </div>
+
+            <div class="code-block rounded p-3 mt-4">
+              <p class="text-sm text-gray-400">Standard URI looks like:</p>
+              <code class="text-xs">
+                mongodb://username:password@cluster0-shard-00-00.xxxx.mongodb.net:27017,.../db?ssl=true&replicaSet=...
+              </code>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 4: Kubernetes Networking Issues -->
+      <section class="mb-12 md:mb-16">
+        <div class="flex items-center mb-6">
+          <div
+            class="bg-gradient-to-r from-purple-500 to-pink-400 p-3 rounded-xl mr-4"
+          >
+            <i class="fas fa-network-wired text-white text-2xl"></i>
+          </div>
+          <div>
+            <h2 class="text-2xl md:text-3xl font-bold gradient-text-purple">
+              Kubernetes Networking Issues
+            </h2>
+            <p class="text-gray-400">
+              Service discovery and DNS resolution problems
+            </p>
+          </div>
+        </div>
+
+        <div class="card-bg rounded-2xl p-6 neon-border">
+          <!-- Frontend Crash Log -->
+          <div class="code-block rounded-lg p-4 mb-6">
+            <div class="flex items-center mb-2">
+              <div class="h-3 w-3 rounded-full bg-red-500 mr-2"></div>
+              <div class="h-3 w-3 rounded-full bg-yellow-500 mr-2"></div>
+              <div class="h-3 w-3 rounded-full bg-green-500 mr-2"></div>
+              <span class="text-sm text-gray-400 ml-2"
+                >Frontend Nginx Error</span
+              >
+            </div>
+
+            <pre
+              class="text-sm"
+            ><code>2026/02/06 14:23:47 [emerg] 1#1: host not found in upstream "backend" in /etc/nginx/conf.d/default.conf:11
+nginx: [emerg] host not found in upstream "backend" in /etc/nginx/conf.d/default.conf:11</code></pre>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <div>
+              <h4 class="font-bold text-lg mb-3 gradient-text-blue">
+                The Problem: Nginx Config
+              </h4>
+
+              <div class="code-block rounded-lg p-4 mb-4">
+                <pre
+                  class="text-sm"
+                ><code><span class="nginx-comment"># nginx.conf inside frontend container</span>
+<span class="nginx-key">server</span> {
+    <span class="nginx-key">listen</span> <span class="nginx-value">80</span>;
+
+    <span class="nginx-key">location</span> <span class="nginx-value">/api/</span> {
+        <span class="nginx-key">proxy_pass</span> <span class="nginx-value">http://backend:3000/</span>;
+        <span class="nginx-comment">#                      ↑↑↑↑↑↑</span>
+        <span class="nginx-comment"># This hostname must match a Kubernetes Service name</span>
+    }
+}</code></pre>
+              </div>
+
+              <div class="note-warning p-4 rounded-lg">
+                <div class="flex items-start">
+                  <i
+                    class="fas fa-question-circle text-neon-pink mt-1 mr-3"
+                  ></i>
+                  <div>
+                    <h5 class="font-bold mb-1">What is "backend"?</h5>
+                    <p class="text-gray-300">
+                      Nginx is trying to resolve
+                      <span class="font-mono">backend</span> as a hostname.
+                      Inside Kubernetes, hostnames are Service names.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h4 class="font-bold text-lg mb-3 gradient-text-green">
+                The Solution: Kubernetes DNS
+              </h4>
+
+              <div class="space-y-4">
+                <div class="note-info p-4 rounded-lg">
+                  <div class="flex items-start">
+                    <i class="fas fa-cube text-neon-blue mt-1 mr-3"></i>
+                    <div>
+                      <p class="font-bold mb-1">Kubernetes DNS Resolution</p>
+                      <p class="text-gray-300">
+                        Inside a pod, you can access services by their name:
+                      </p>
+                      <div class="code-block rounded p-2 mt-2">
+                        <code class="text-xs"
+                          >http://&lt;service-name&gt;:&lt;port&gt;</code
+                        >
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <h5 class="font-bold mb-2">Two Options To Fix:</h5>
+                  <div class="grid grid-cols-2 gap-4">
+                    <div
+                      class="p-3 rounded-xl"
+                      style="
+                        background: rgba(0, 255, 157, 0.1);
+                        border: 1px solid rgba(0, 255, 157, 0.3);
+                      "
+                    >
+                      <p class="font-bold text-sm mb-2 text-center">Option 1</p>
+                      <p class="text-xs font-mono text-center mb-2">
+                        Create Service named "backend"
+                      </p>
+                      <p class="text-xs text-gray-400">No rebuild needed</p>
+                    </div>
+
+                    <div
+                      class="p-3 rounded-xl"
+                      style="
+                        background: rgba(0, 217, 255, 0.1);
+                        border: 1px solid rgba(0, 217, 255, 0.3);
+                      "
+                    >
+                      <p class="font-bold text-sm mb-2 text-center">Option 2</p>
+                      <p class="text-xs font-mono text-center mb-2">
+                        Change nginx to "backend-service"
+                      </p>
+                      <p class="text-xs text-gray-400">Rebuild + push image</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Service Creation -->
+          <div class="p-6 rounded-xl" style="background: rgba(17, 17, 31, 0.9)">
+            <h4 class="font-bold text-lg mb-4 gradient-text-purple text-center">
+              <i class="fas fa-cogs mr-2"></i>Creating the Backend Service
+            </h4>
+
+            <div class="code-block rounded-lg p-4 mb-4">
+              <pre
+                class="text-sm"
+              ><code><span class="yaml-key">apiVersion</span>: <span class="yaml-value">v1</span>
+<span class="yaml-key">kind</span>: <span class="yaml-string">Service</span>
+<span class="yaml-key">metadata</span>:
+  <span class="yaml-key">name</span>: <span class="yaml-string">backend</span>
+<span class="yaml-key">spec</span>:
+  <span class="yaml-key">selector</span>:
+    <span class="yaml-key">app</span>: <span class="yaml-string">backend</span>
+  <span class="yaml-key">ports</span>:
+    - <span class="yaml-key">port</span>: <span class="yaml-value">3000</span>
+      <span class="yaml-key">targetPort</span>: <span class="yaml-value">3000</span>
+  <span class="yaml-key">type</span>: <span class="yaml-string">ClusterIP</span></code></pre>
+            </div>
+
+            <div class="grid grid-cols-3 gap-4 text-center">
+              <div>
+                <div
+                  class="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center mx-auto mb-2"
+                >
+                  <i class="fas fa-tag text-white"></i>
+                </div>
+                <p class="text-xs font-bold">Service Name</p>
+                <p class="text-xs text-gray-400">backend</p>
+              </div>
+
+              <div>
+                <div
+                  class="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center mx-auto mb-2"
+                >
+                  <i class="fas fa-filter text-white"></i>
+                </div>
+                <p class="text-xs font-bold">Selector</p>
+                <p class="text-xs text-gray-400">app: backend</p>
+              </div>
+
+              <div>
+                <div
+                  class="w-10 h-10 rounded-full bg-purple-500 flex items-center justify-center mx-auto mb-2"
+                >
+                  <i class="fas fa-plug text-white"></i>
+                </div>
+                <p class="text-xs font-bold">Port Mapping</p>
+                <p class="text-xs text-gray-400">3000 → 3000</p>
+              </div>
+            </div>
+
+            <p class="text-sm text-gray-400 mt-4 text-center">
+              This Service will be resolvable as
+              <span class="font-mono bg-gray-800 px-2 py-1 rounded"
+                >backend</span
+              >
+              from any pod in the same namespace.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 5: Health Checks and Production Readiness -->
+      <section class="mb-12 md:mb-16">
+        <div class="flex items-center mb-6">
+          <div
+            class="bg-gradient-to-r from-green-500 to-emerald-400 p-3 rounded-xl mr-4"
+          >
+            <i class="fas fa-heartbeat text-white text-2xl"></i>
+          </div>
+          <div>
+            <h2 class="text-2xl md:text-3xl font-bold gradient-text-green">
+              Health Checks & Production Readiness
+            </h2>
+            <p class="text-gray-400">Making your application self-healing</p>
+          </div>
+        </div>
+
+        <div class="card-bg rounded-2xl p-6 neon-border">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <div>
+              <h4 class="font-bold text-lg mb-3 gradient-text-blue">
+                Complete Backend Deployment
+              </h4>
+
+              <div class="code-block rounded-lg p-4 overflow-x-auto">
+                <pre
+                  class="text-sm"
+                ><code><span class="yaml-key">apiVersion</span>: <span class="yaml-value">apps/v1</span>
+<span class="yaml-key">kind</span>: <span class="yaml-string">Deployment</span>
+<span class="yaml-key">metadata</span>:
+  <span class="yaml-key">name</span>: <span class="yaml-string">backend-deployment</span>
+<span class="yaml-key">spec</span>:
+  <span class="yaml-key">replicas</span>: <span class="yaml-value">2</span>
+  <span class="yaml-key">selector</span>:
+    <span class="yaml-key">matchLabels</span>:
+      <span class="yaml-key">app</span>: <span class="yaml-string">backend</span>
+  <span class="yaml-key">template</span>:
+    <span class="yaml-key">metadata</span>:
+      <span class="yaml-key">labels</span>:
+        <span class="yaml-key">app</span>: <span class="yaml-string">backend</span>
+    <span class="yaml-key">spec</span>:
+      <span class="yaml-key">containers</span>:
+        - <span class="yaml-key">name</span>: <span class="yaml-string">backend</span>
+          <span class="yaml-key">image</span>: <span class="yaml-string">amiitdev/shopify-backend:latest</span>
+          <span class="yaml-key">ports</span>:
+            - <span class="yaml-key">containerPort</span>: <span class="yaml-value">3000</span>
+          <span class="yaml-key">envFrom</span>:
+            - <span class="yaml-key">secretRef</span>:
+                <span class="yaml-key">name</span>: <span class="yaml-string">shopify-secret</span>
+          
+          <span class="yaml-comment"># Resource Limits</span>
+          <span class="yaml-key">resources</span>:
+            <span class="yaml-key">requests</span>:
+              <span class="yaml-key">memory</span>: <span class="yaml-string">"128Mi"</span>
+              <span class="yaml-key">cpu</span>: <span class="yaml-string">"100m"</span>
+            <span class="yaml-key">limits</span>:
+              <span class="yaml-key">memory</span>: <span class="yaml-string">"256Mi"</span>
+              <span class="yaml-key">cpu</span>: <span class="yaml-string">"500m"</span>
+          
+          <span class="yaml-comment"># Readiness Probe</span>
+          <span class="yaml-key">readinessProbe</span>:
+            <span class="yaml-key">httpGet</span>:
+              <span class="yaml-key">path</span>: <span class="yaml-string">/health</span>
+              <span class="yaml-key">port</span>: <span class="yaml-value">3000</span>
+            <span class="yaml-key">initialDelaySeconds</span>: <span class="yaml-value">5</span>
+            <span class="yaml-key">periodSeconds</span>: <span class="yaml-value">5</span>
+          
+          <span class="yaml-comment"># Liveness Probe</span>
+          <span class="yaml-key">livenessProbe</span>:
+            <span class="yaml-key">httpGet</span>:
+              <span class="yaml-key">path</span>: <span class="yaml-string">/health</span>
+              <span class="yaml-key">port</span>: <span class="yaml-value">3000</span>
+            <span class="yaml-key">initialDelaySeconds</span>: <span class="yaml-value">10</span>
+            <span class="yaml-key">periodSeconds</span>: <span class="yaml-value">10</span></code></pre>
+              </div>
+            </div>
+
+            <div>
+              <h4 class="font-bold text-lg mb-3 gradient-text-purple">
+                Understanding Health Checks
+              </h4>
+
+              <div class="space-y-6">
+                <div>
+                  <h5 class="font-bold mb-2 flex items-center">
+                    <span
+                      class="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center mr-2"
+                    >
+                      <i class="fas fa-check text-white text-xs"></i>
+                    </span>
+                    Readiness Probe
+                  </h5>
+                  <p class="text-sm text-gray-300 mb-2">
+                    Determines when pod is ready to receive traffic.
+                  </p>
+                  <ul class="list-disc pl-5 text-sm text-gray-400 space-y-1">
+                    <li>
+                      Checks
+                      <span class="font-mono bg-gray-800 px-2 py-1 rounded"
+                        >/health</span
+                      >
+                      endpoint
+                    </li>
+                    <li>Starts checking after 5 seconds</li>
+                    <li>Checks every 5 seconds</li>
+                    <li>If fails → pod removed from service load balancer</li>
+                  </ul>
+                </div>
+
+                <div>
+                  <h5 class="font-bold mb-2 flex items-center">
+                    <span
+                      class="w-6 h-6 rounded-full bg-red-500 flex items-center justify-center mr-2"
+                    >
+                      <i class="fas fa-heartbeat text-white text-xs"></i>
+                    </span>
+                    Liveness Probe
+                  </h5>
+                  <p class="text-sm text-gray-300 mb-2">
+                    Determines when pod needs to be restarted.
+                  </p>
+                  <ul class="list-disc pl-5 text-sm text-gray-400 space-y-1">
+                    <li>
+                      Checks
+                      <span class="font-mono bg-gray-800 px-2 py-1 rounded"
+                        >/health</span
+                      >
+                      endpoint
+                    </li>
+                    <li>Starts checking after 10 seconds</li>
+                    <li>Checks every 10 seconds</li>
+                    <li>If fails → pod is restarted automatically</li>
+                  </ul>
+                </div>
+
+                <div class="note-important p-4 rounded-lg">
+                  <div class="flex items-start">
+                    <i class="fas fa-code text-neon-purple mt-1 mr-3"></i>
+                    <div>
+                      <h5 class="font-bold mb-1">
+                        Backend Health Endpoint Required
+                      </h5>
+                      <div class="code-block rounded p-2 mt-2">
+                        <code class="text-xs"
+                          >app.get('/health', (req, res) => {
+                          res.status(200).send('OK'); });</code
+                        >
+                      </div>
+                      <p class="text-sm text-gray-300 mt-2">
+                        Without this endpoint, pods will fail probes and restart
+                        continuously.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Rolling Update Visualization -->
+          <div
+            class="mt-8 p-6 rounded-xl"
+            style="background: rgba(11, 15, 25, 0.8)"
+          >
+            <h4 class="font-bold text-lg mb-4 gradient-text-blue text-center">
+              <i class="fas fa-sync-alt mr-2"></i>Rolling Update Process
+            </h4>
+
+            <div
+              class="flex flex-col md:flex-row items-center justify-center gap-6 mb-4"
+            >
+              <div class="text-center">
+                <div
+                  class="w-16 h-16 rounded-full bg-yellow-500 flex items-center justify-center mb-2"
+                >
+                  <i class="fas fa-play text-white"></i>
+                </div>
+                <p class="text-sm font-bold">Apply Changes</p>
+                <p class="text-xs text-gray-400">kubectl apply -f ...</p>
+              </div>
+
+              <div class="text-center">
+                <i class="fas fa-arrow-right text-neon-purple text-xl"></i>
+              </div>
+
+              <div class="text-center">
+                <div
+                  class="w-16 h-16 rounded-full bg-blue-500 flex items-center justify-center mb-2"
+                >
+                  <i class="fas fa-plus text-white"></i>
+                </div>
+                <p class="text-sm font-bold">New Pod Created</p>
+                <p class="text-xs text-gray-400">0/1 Running</p>
+              </div>
+
+              <div class="text-center">
+                <i class="fas fa-arrow-right text-neon-purple text-xl"></i>
+              </div>
+
+              <div class="text-center">
+                <div
+                  class="w-16 h-16 rounded-full bg-green-500 flex items-center justify-center mb-2"
+                >
+                  <i class="fas fa-check text-white"></i>
+                </div>
+                <p class="text-sm font-bold">Probes Pass</p>
+                <p class="text-xs text-gray-400">1/1 Running</p>
+              </div>
+
+              <div class="text-center">
+                <i class="fas fa-arrow-right text-neon-purple text-xl"></i>
+              </div>
+
+              <div class="text-center">
+                <div
+                  class="w-16 h-16 rounded-full bg-red-500 flex items-center justify-center mb-2"
+                >
+                  <i class="fas fa-trash text-white"></i>
+                </div>
+                <p class="text-sm font-bold">Old Pod Terminated</p>
+                <p class="text-xs text-gray-400">Zero downtime</p>
+              </div>
+            </div>
+
+            <div class="text-center">
+              <div
+                class="inline-flex items-center bg-gray-800 px-4 py-2 rounded-lg"
+              >
+                <i class="fas fa-bolt text-yellow-400 mr-2"></i>
+                <span class="text-sm font-bold">Zero Downtime Deployment</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 6: Ingress Configuration -->
+      <section class="mb-12 md:mb-16">
+        <div class="flex items-center mb-6">
+          <div
+            class="bg-gradient-to-r from-yellow-500 to-orange-400 p-3 rounded-xl mr-4"
+          >
+            <i class="fas fa-road text-white text-2xl"></i>
+          </div>
+          <div>
+            <h2
+              class="text-2xl md:text-3xl font-bold"
+              style="
+                background: linear-gradient(90deg, #ffcc00, #ff9966);
+                -webkit-background-clip: text;
+                background-clip: text;
+                color: transparent;
+              "
+            >
+              Ingress Configuration
+            </h2>
+            <p class="text-gray-400">
+              Routing external traffic to your services
+            </p>
+          </div>
+        </div>
+
+        <div class="card-bg rounded-2xl p-6 neon-border">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <div>
+              <h4 class="font-bold text-lg mb-3 gradient-text-green">
+                Ingress YAML Configuration
+              </h4>
+
+              <div class="code-block rounded-lg p-4 mb-4">
+                <pre
+                  class="text-sm"
+                ><code><span class="yaml-key">apiVersion</span>: <span class="yaml-value">networking.k8s.io/v1</span>
+<span class="yaml-key">kind</span>: <span class="yaml-string">Ingress</span>
+<span class="yaml-key">metadata</span>:
+  <span class="yaml-key">name</span>: <span class="yaml-string">shopify-ingress</span>
+<span class="yaml-key">spec</span>:
+  <span class="yaml-key">rules</span>:
+    - <span class="yaml-key">host</span>: <span class="yaml-string">shopify.local</span>
+      <span class="yaml-key">http</span>:
+        <span class="yaml-key">paths</span>:
+          - <span class="yaml-key">path</span>: <span class="yaml-string">/</span>
+            <span class="yaml-key">pathType</span>: <span class="yaml-string">Prefix</span>
+            <span class="yaml-key">backend</span>:
+              <span class="yaml-key">service</span>:
+                <span class="yaml-key">name</span>: <span class="yaml-string">frontend-service</span>
+                <span class="yaml-key">port</span>:
+                  <span class="yaml-key">number</span>: <span class="yaml-value">80</span></code></pre>
+              </div>
+
+              <div class="note-info p-4 rounded-lg">
+                <div class="flex items-start">
+                  <i class="fas fa-info-circle text-neon-blue mt-1 mr-3"></i>
+                  <div>
+                    <h5 class="font-bold mb-1">What This Does</h5>
+                    <p class="text-gray-300">
+                      Routes all traffic for
+                      <span class="font-mono bg-gray-800 px-2 py-1 rounded"
+                        >shopify.local</span
+                      >
+                      to your frontend service.
+                    </p>
+                    <p class="text-gray-300 mt-2">
+                      Clean, professional routing without exposing NodePorts.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h4 class="font-bold text-lg mb-3 gradient-text-purple">
+                Setting Up Ingress
+              </h4>
+
+              <div class="space-y-4">
+                <div>
+                  <h5 class="font-bold mb-2">Step 1: Enable Ingress Addon</h5>
+                  <div class="code-block rounded p-3">
+                    <div class="terminal-line pl-6">
+                      <code>minikube addons enable ingress</code>
+                    </div>
+                  </div>
+                  <p class="text-sm text-gray-400 mt-1">
+                    Installs NGINX Ingress Controller
+                  </p>
+                </div>
+
+                <div>
+                  <h5 class="font-bold mb-2">Step 2: Apply Ingress</h5>
+                  <div class="code-block rounded p-3">
+                    <div class="terminal-line pl-6">
+                      <code>kubectl apply -f k8s/ingress.yaml</code>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <h5 class="font-bold mb-2">Step 3: Check Ingress Status</h5>
+                  <div class="code-block rounded p-3">
+                    <div class="terminal-line pl-6">
+                      <code>kubectl get ingress</code>
+                    </div>
+                  </div>
+                  <div class="code-block rounded p-2 mt-2">
+                    <code class="text-xs"
+                      >NAME CLASS HOSTS ADDRESS PORTS shopify-ingress nginx
+                      shopify.local 192.168.49.2 80</code
+                    >
+                  </div>
+                </div>
+
+                <div>
+                  <h5 class="font-bold mb-2">Step 4: Add to /etc/hosts</h5>
+                  <div class="code-block rounded p-3">
+                    <div class="terminal-line pl-6">
+                      <code>sudo nano /etc/hosts</code>
+                    </div>
+                  </div>
+                  <p class="text-sm text-gray-400 mt-1">
+                    Add:
+                    <span class="font-mono bg-gray-800 px-2 py-1 rounded"
+                      >192.168.49.2 shopify.local</span
+                    >
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Architecture Diagram -->
+          <div
+            class="mt-8 p-6 rounded-xl"
+            style="background: rgba(17, 17, 31, 0.9)"
+          >
+            <h4 class="font-bold text-lg mb-6 gradient-text-blue text-center">
+              <i class="fas fa-project-diagram mr-2"></i>Complete Production
+              Architecture
+            </h4>
+
+            <div class="flex flex-col items-center">
+              <!-- Row 1: Browser to Ingress -->
+              <div class="flex items-center mb-4">
+                <div
+                  class="text-center p-3 rounded-xl architecture-box"
+                  style="background: rgba(0, 217, 255, 0.1)"
+                >
+                  <div
+                    class="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 flex items-center justify-center mb-2"
+                  >
+                    <i class="fas fa-globe text-white"></i>
+                  </div>
+                  <p class="text-xs font-bold">Browser</p>
+                  <p class="text-xs text-gray-400">shopify.local</p>
+                </div>
+
+                <div class="mx-4">
+                  <i class="fas fa-arrow-right text-xl text-neon-blue"></i>
+                </div>
+
+                <div
+                  class="text-center p-3 rounded-xl architecture-box"
+                  style="background: rgba(185, 103, 255, 0.1)"
+                >
+                  <div
+                    class="w-12 h-12 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center mb-2"
+                  >
+                    <i class="fas fa-road text-white"></i>
+                  </div>
+                  <p class="text-xs font-bold">Ingress</p>
+                  <p class="text-xs text-gray-400">NGINX Controller</p>
+                </div>
+              </div>
+
+              <!-- Arrow Down -->
+              <div class="mb-4">
+                <i class="fas fa-arrow-down text-xl text-neon-purple"></i>
+              </div>
+
+              <!-- Row 2: Services -->
+              <div class="flex items-center mb-4">
+                <div
+                  class="text-center p-3 rounded-xl architecture-box"
+                  style="background: rgba(0, 255, 157, 0.1)"
+                >
+                  <div
+                    class="w-12 h-12 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 flex items-center justify-center mb-2"
+                  >
+                    <i class="fas fa-server text-white"></i>
+                  </div>
+                  <p class="text-xs font-bold">Frontend Service</p>
+                  <p class="text-xs text-gray-400">ClusterIP: 80</p>
+                </div>
+
+                <div class="mx-4">
+                  <i class="fas fa-arrow-right text-xl text-neon-blue"></i>
+                </div>
+
+                <div
+                  class="text-center p-3 rounded-xl architecture-box"
+                  style="background: rgba(255, 42, 109, 0.1)"
+                >
+                  <div
+                    class="w-12 h-12 rounded-full bg-gradient-to-r from-red-500 to-pink-500 flex items-center justify-center mb-2"
+                  >
+                    <i class="fas fa-server text-white"></i>
+                  </div>
+                  <p class="text-xs font-bold">Backend Service</p>
+                  <p class="text-xs text-gray-400">ClusterIP: 3000</p>
+                </div>
+              </div>
+
+              <!-- Arrow Down -->
+              <div class="mb-4">
+                <i class="fas fa-arrow-down text-xl text-neon-purple"></i>
+              </div>
+
+              <!-- Row 3: Pods -->
+              <div class="flex items-center">
+                <div
+                  class="text-center p-3 rounded-xl architecture-box"
+                  style="background: rgba(255, 204, 0, 0.1)"
+                >
+                  <div
+                    class="w-12 h-12 rounded-full bg-gradient-to-r from-yellow-500 to-orange-500 flex items-center justify-center mb-2"
+                  >
+                    <i class="fas fa-cube text-white"></i>
+                  </div>
+                  <p class="text-xs font-bold">Frontend Pod</p>
+                  <p class="text-xs text-gray-400">Nginx + React</p>
+                </div>
+
+                <div class="mx-4">
+                  <i class="fas fa-arrows-alt-h text-xl text-neon-blue"></i>
+                </div>
+
+                <div
+                  class="text-center p-3 rounded-xl architecture-box"
+                  style="background: rgba(0, 119, 255, 0.1)"
+                >
+                  <div
+                    class="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 flex items-center justify-center mb-2"
+                  >
+                    <i class="fas fa-cubes text-white"></i>
+                  </div>
+                  <p class="text-xs font-bold">Backend Pods (2+)</p>
+                  <p class="text-xs text-gray-400">Node.js + Express</p>
+                  <div class="flex justify-center space-x-1 mt-1">
+                    <div class="w-2 h-2 rounded-full bg-green-500"></div>
+                    <div class="w-2 h-2 rounded-full bg-green-500"></div>
+                    <div class="w-2 h-2 rounded-full bg-gray-500"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 7: Auto-Scaling and Production Features -->
+      <section class="mb-12">
+        <div class="flex items-center mb-6">
+          <div
+            class="bg-gradient-to-r from-red-500 to-pink-400 p-3 rounded-xl mr-4"
+          >
+            <i class="fas fa-expand-arrows-alt text-white text-2xl"></i>
+          </div>
+          <div>
+            <h2 class="text-2xl md:text-3xl font-bold gradient-text-pink">
+              Auto-Scaling & Production Features
+            </h2>
+            <p class="text-gray-400">
+              Making your application truly production-ready
+            </p>
+          </div>
+        </div>
+
+        <div class="card-bg rounded-2xl p-6 neon-border">
+          <!-- HPA Setup -->
+          <div class="mb-8">
+            <h4 class="font-bold text-lg mb-3 gradient-text-blue">
+              Horizontal Pod Autoscaler (HPA)
+            </h4>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div>
+                <div class="code-block rounded-lg p-4 mb-4">
+                  <div class="terminal-line pl-6">
+                    <code
+                      >kubectl autoscale deployment backend-deployment \</code
+                    >
+                  </div>
+                  <div class="pl-8 mb-1">
+                    <code>--cpu-percent=50 \</code>
+                  </div>
+                  <div class="pl-8 mb-1">
+                    <code>--min=2 \</code>
+                  </div>
+                  <div class="pl-8">
+                    <code>--max=5</code>
+                  </div>
+                </div>
+
+                <div class="note-tip p-4 rounded-lg">
+                  <div class="flex items-start">
+                    <i class="fas fa-robot text-neon-green mt-1 mr-3"></i>
+                    <div>
+                      <h5 class="font-bold mb-1">What This Does</h5>
+                      <p class="text-gray-300">
+                        Automatically scales backend pods based on CPU usage:
+                      </p>
+                      <ul class="list-disc pl-5 text-gray-300 mt-2 space-y-1">
+                        <li>Minimum 2 pods always running</li>
+                        <li>Maximum 5 pods during high load</li>
+                        <li>Scale when CPU > 50%</li>
+                        <li>Scale down when CPU < 50%</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h5 class="font-bold mb-2">Check HPA Status</h5>
+                <div class="code-block rounded p-3 mb-4">
+                  <div class="terminal-line pl-6">
+                    <code>kubectl get hpa</code>
+                  </div>
+                </div>
+
+                <div class="code-block rounded p-3">
+                  <code class="text-xs">
+                    NAME REFERENCE TARGETS MINPODS MAXPODS REPLICAS AGE
+                    backend-deployment Deployment/backend-deployment 0%/50% 2 5
+                    2 1m
+                  </code>
+                </div>
+
+                <div class="mt-4 grid grid-cols-2 gap-2">
+                  <div class="p-2 rounded bg-gray-800 text-center">
+                    <p class="text-xs font-bold">Current CPU</p>
+                    <p class="text-lg font-bold text-green-400">0%</p>
+                  </div>
+                  <div class="p-2 rounded bg-gray-800 text-center">
+                    <p class="text-xs font-bold">Target</p>
+                    <p class="text-lg font-bold text-yellow-400">50%</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Production Features Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div
+              class="p-4 rounded-xl architecture-box"
+              style="background: rgba(0, 217, 255, 0.1)"
+            >
+              <div class="flex items-center mb-3">
+                <div
+                  class="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 flex items-center justify-center mr-3"
+                >
+                  <i class="fas fa-shield-alt text-white"></i>
+                </div>
+                <h5 class="font-bold">Resource Limits</h5>
+              </div>
+              <p class="text-sm text-gray-300">
+                Prevents pods from consuming unlimited memory/CPU, protecting
+                your cluster from resource exhaustion.
+              </p>
+            </div>
+
+            <div
+              class="p-4 rounded-xl architecture-box"
+              style="background: rgba(185, 103, 255, 0.1)"
+            >
+              <div class="flex items-center mb-3">
+                <div
+                  class="w-10 h-10 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center mr-3"
+                >
+                  <i class="fas fa-heartbeat text-white"></i>
+                </div>
+                <h5 class="font-bold">Health Probes</h5>
+              </div>
+              <p class="text-sm text-gray-300">
+                Self-healing application. Kubernetes automatically restarts
+                unhealthy pods and routes traffic only to ready pods.
+              </p>
+            </div>
+
+            <div
+              class="p-4 rounded-xl architecture-box"
+              style="background: rgba(0, 255, 157, 0.1)"
+            >
+              <div class="flex items-center mb-3">
+                <div
+                  class="w-10 h-10 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 flex items-center justify-center mr-3"
+                >
+                  <i class="fas fa-expand-arrows-alt text-white"></i>
+                </div>
+                <h5 class="font-bold">Auto-Scaling</h5>
+              </div>
+              <p class="text-sm text-gray-300">
+                Automatic scaling based on load. Responds to traffic spikes
+                without manual intervention.
+              </p>
+            </div>
+
+            <div
+              class="p-4 rounded-xl architecture-box"
+              style="background: rgba(255, 42, 109, 0.1)"
+            >
+              <div class="flex items-center mb-3">
+                <div
+                  class="w-10 h-10 rounded-full bg-gradient-to-r from-red-500 to-pink-500 flex items-center justify-center mr-3"
+                >
+                  <i class="fas fa-sync-alt text-white"></i>
+                </div>
+                <h5 class="font-bold">Rolling Updates</h5>
+              </div>
+              <p class="text-sm text-gray-300">
+                Zero-downtime deployments. New pods start, pass health checks,
+                then old pods terminate.
+              </p>
+            </div>
+
+            <div
+              class="p-4 rounded-xl architecture-box"
+              style="background: rgba(255, 204, 0, 0.1)"
+            >
+              <div class="flex items-center mb-3">
+                <div
+                  class="w-10 h-10 rounded-full bg-gradient-to-r from-yellow-500 to-orange-500 flex items-center justify-center mr-3"
+                >
+                  <i class="fas fa-road text-white"></i>
+                </div>
+                <h5 class="font-bold">Ingress Routing</h5>
+              </div>
+              <p class="text-sm text-gray-300">
+                Clean external access with custom domains. No NodePort exposure
+                required.
+              </p>
+            </div>
+
+            <div
+              class="p-4 rounded-xl architecture-box"
+              style="background: rgba(0, 119, 255, 0.1)"
+            >
+              <div class="flex items-center mb-3">
+                <div
+                  class="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 flex items-center justify-center mr-3"
+                >
+                  <i class="fas fa-key text-white"></i>
+                </div>
+                <h5 class="font-bold">Secret Management</h5>
+              </div>
+              <p class="text-sm text-gray-300">
+                Secure credential injection. Encrypted at rest, only accessible
+                by authorized pods.
+              </p>
+            </div>
+          </div>
+
+          <!-- Next Steps -->
+          <div
+            class="mt-8 p-6 rounded-xl text-center"
+            style="background: rgba(17, 17, 31, 0.9)"
+          >
+            <h4 class="text-xl font-bold mb-4 gradient-text-purple">
+              <i class="fas fa-rocket mr-2"></i>What's Next?
+            </h4>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div
+                class="p-4 rounded-xl"
+                style="background: rgba(0, 217, 255, 0.1)"
+              >
+                <div
+                  class="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 flex items-center justify-center mx-auto mb-2"
+                >
+                  <i class="fab fa-github text-white"></i>
+                </div>
+                <p class="font-bold mb-2">CI/CD Pipeline</p>
+                <p class="text-sm text-gray-300">
+                  Auto-deploy on git push with GitHub Actions
+                </p>
+              </div>
+
+              <div
+                class="p-4 rounded-xl"
+                style="background: rgba(185, 103, 255, 0.1)"
+              >
+                <div
+                  class="w-12 h-12 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center mx-auto mb-2"
+                >
+                  <i class="fas fa-lock text-white"></i>
+                </div>
+                <p class="font-bold mb-2">HTTPS with cert-manager</p>
+                <p class="text-sm text-gray-300">
+                  Auto SSL certificates with Let's Encrypt
+                </p>
+              </div>
+
+              <div
+                class="p-4 rounded-xl"
+                style="background: rgba(0, 255, 157, 0.1)"
+              >
+                <div
+                  class="w-12 h-12 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 flex items-center justify-center mx-auto mb-2"
+                >
+                  <i class="fas fa-cloud text-white"></i>
+                </div>
+                <p class="font-bold mb-2">Cloud Deployment</p>
+                <p class="text-sm text-gray-300">
+                  Deploy to AWS EKS, Google GKE, or Azure AKS
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Final Summary -->
+      <section class="mb-12">
+        <div class="card-bg rounded-2xl p-8 neon-border text-center">
+          <div class="mb-6">
+            <div
+              class="w-24 h-24 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center mx-auto mb-4"
+            >
+              <i class="fas fa-trophy text-white text-4xl"></i>
+            </div>
+            <h2 class="text-3xl font-bold mb-2 gradient-text-purple">
+              Congratulations! 🎉
+            </h2>
+            <p class="text-xl text-gray-300">
+              You've successfully debugged and deployed a production-grade
+              Kubernetes application
+            </p>
+          </div>
+
+          <div class="max-w-4xl mx-auto">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+              <div
+                class="text-left p-4 rounded-xl"
+                style="background: rgba(0, 217, 255, 0.1)"
+              >
+                <h3 class="font-bold text-lg mb-3 gradient-text-blue">
+                  What You Debugged
+                </h3>
+                <ul class="space-y-2 text-gray-300">
+                  <li class="flex items-start">
+                    <i class="fas fa-check text-neon-green mt-1 mr-2"></i>
+                    <span>Broken Kubernetes cluster connection</span>
+                  </li>
+                  <li class="flex items-start">
+                    <i class="fas fa-check text-neon-green mt-1 mr-2"></i>
+                    <span>YAML formatting errors</span>
+                  </li>
+                  <li class="flex items-start">
+                    <i class="fas fa-check text-neon-green mt-1 mr-2"></i>
+                    <span>MongoDB DNS SRV resolution</span>
+                  </li>
+                  <li class="flex items-start">
+                    <i class="fas fa-check text-neon-green mt-1 mr-2"></i>
+                    <span>Kubernetes service discovery</span>
+                  </li>
+                  <li class="flex items-start">
+                    <i class="fas fa-check text-neon-green mt-1 mr-2"></i>
+                    <span>Nginx upstream host resolution</span>
+                  </li>
+                  <li class="flex items-start">
+                    <i class="fas fa-check text-neon-green mt-1 mr-2"></i>
+                    <span>CrashLoopBackOff debugging</span>
+                  </li>
+                </ul>
+              </div>
+
+              <div
+                class="text-left p-4 rounded-xl"
+                style="background: rgba(185, 103, 255, 0.1)"
+              >
+                <h3 class="font-bold text-lg mb-3 gradient-text-purple">
+                  What You Deployed
+                </h3>
+                <ul class="space-y-2 text-gray-300">
+                  <li class="flex items-start">
+                    <i class="fas fa-cube text-neon-blue mt-1 mr-2"></i>
+                    <span>Multi-replica backend deployment</span>
+                  </li>
+                  <li class="flex items-start">
+                    <i class="fas fa-shield-alt text-neon-blue mt-1 mr-2"></i>
+                    <span>Secret injection for credentials</span>
+                  </li>
+                  <li class="flex items-start">
+                    <i class="fas fa-heartbeat text-neon-blue mt-1 mr-2"></i>
+                    <span>Health checks and self-healing</span>
+                  </li>
+                  <li class="flex items-start">
+                    <i
+                      class="fas fa-expand-arrows-alt text-neon-blue mt-1 mr-2"
+                    ></i>
+                    <span>Auto-scaling with HPA</span>
+                  </li>
+                  <li class="flex items-start">
+                    <i class="fas fa-road text-neon-blue mt-1 mr-2"></i>
+                    <span>Ingress routing with custom domain</span>
+                  </li>
+                  <li class="flex items-start">
+                    <i class="fas fa-sync-alt text-neon-blue mt-1 mr-2"></i>
+                    <span>Zero-downtime rolling updates</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="note-important p-4 rounded-lg max-w-2xl mx-auto">
+              <div class="flex items-start">
+                <i class="fas fa-gem text-yellow-400 mt-1 mr-3"></i>
+                <div>
+                  <p class="text-gray-300">
+                    This is not beginner-level knowledge anymore. You've
+                    successfully navigated complex Kubernetes debugging and
+                    deployed a production-ready application with enterprise
+                    features. This is exactly what senior DevOps engineers do
+                    every day.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="mt-12 pt-8 border-t border-gray-800">
+      <div class="flex flex-col md:flex-row justify-between items-center">
+        <div class="mb-4 md:mb-0">
+          <p class="text-gray-400">
+            <i class="fab fa-kubernetes text-neon-blue mr-2"></i>
+            Kubernetes DevOps Complete Guide
+          </p>
+          <p class="text-sm text-gray-500">
+            From broken cluster to production deployment - Every step explained
+          </p>
+        </div>
+        <div class="flex space-x-4">
+          <div class="text-center">
+            <div
+              class="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 flex items-center justify-center"
+            >
+              <i class="fas fa-bug text-white"></i>
+            </div>
+            <p class="text-xs mt-1 text-gray-400">Debugging</p>
+          </div>
+          <div class="text-center">
+            <div
+              class="w-10 h-10 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center"
+            >
+              <i class="fas fa-network-wired text-white"></i>
+            </div>
+            <p class="text-xs mt-1 text-gray-400">Networking</p>
+          </div>
+          <div class="text-center">
+            <div
+              class="w-10 h-10 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 flex items-center justify-center"
+            >
+              <i class="fas fa-rocket text-white"></i>
+            </div>
+            <p class="text-xs mt-1 text-gray-400">Production</p>
+          </div>
+        </div>
+      </div>
+      <p class="text-center text-gray-600 text-sm mt-6">
+        Real-World Kubernetes • Production Debugging • Enterprise DevOps
+      </p>
+    </footer>
+
+    <script>
+      // Interactive elements
+      document.addEventListener('DOMContentLoaded', function () {
+        // Add hover effects to architecture boxes
+        const boxes = document.querySelectorAll('.architecture-box');
+        boxes.forEach((box) => {
+          box.addEventListener('mouseenter', function () {
+            this.style.transform = 'translateY(-5px)';
+            this.style.boxShadow = '0 10px 25px rgba(0, 217, 255, 0.3)';
+          });
+
+          box.addEventListener('mouseleave', function () {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = 'none';
+          });
+        });
+
+        // Copy code on click
+        const codeBlocks = document.querySelectorAll('.code-block');
+        codeBlocks.forEach((block) => {
+          block.addEventListener('click', function () {
+            const code = this.querySelector('pre')?.textContent || '';
+            if (code && navigator.clipboard) {
+              navigator.clipboard.writeText(code).then(() => {
+                const originalBorder = this.style.borderLeft;
+                this.style.borderLeft = '4px solid #00ff9d';
+                this.style.transition = 'border-left 0.3s ease';
+
+                setTimeout(() => {
+                  this.style.borderLeft = originalBorder;
+                }, 500);
+              });
+            }
+          });
+        });
+
+        // Terminal line animations
+        const terminalLines = document.querySelectorAll('.terminal-line');
+        terminalLines.forEach((line, index) => {
+          setTimeout(() => {
+            line.style.opacity = '1';
+            line.style.transform = 'translateX(0)';
+          }, index * 100);
+        });
+      });
+    </script>
+  </body>
+</html>

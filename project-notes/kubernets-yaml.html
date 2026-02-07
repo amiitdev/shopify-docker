@@ -1,0 +1,3573 @@
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kubernetes YAML Complete Guide - Line by Line</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600&family=Inter:wght@300;400;500;600;700&display=swap');
+
+      * {
+        font-family: 'Inter', sans-serif;
+      }
+
+      code,
+      pre {
+        font-family: 'Fira Code', monospace !important;
+      }
+
+      :root {
+        --neon-blue: #00d9ff;
+        --neon-purple: #b967ff;
+        --neon-pink: #ff2a6d;
+        --neon-green: #00ff9d;
+        --dark-bg: #0a0a0f;
+        --darker-bg: #050508;
+        --card-bg: #11111f;
+        --border-glow: rgba(0, 217, 255, 0.2);
+      }
+
+      body {
+        background-color: var(--dark-bg);
+        color: #e2e8f0;
+        background-image:
+          radial-gradient(
+            circle at 10% 20%,
+            rgba(185, 103, 255, 0.05) 0%,
+            transparent 20%
+          ),
+          radial-gradient(
+            circle at 90% 80%,
+            rgba(0, 217, 255, 0.05) 0%,
+            transparent 20%
+          );
+        min-height: 100vh;
+      }
+
+      .neon-border {
+        border: 1px solid rgba(0, 217, 255, 0.3);
+        box-shadow:
+          0 0 15px rgba(0, 217, 255, 0.1),
+          inset 0 0 15px rgba(0, 217, 255, 0.05);
+      }
+
+      .gradient-text-blue {
+        background: linear-gradient(90deg, var(--neon-blue), #0099ff);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+
+      .gradient-text-purple {
+        background: linear-gradient(90deg, var(--neon-purple), #ff00ff);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+
+      .gradient-text-pink {
+        background: linear-gradient(90deg, var(--neon-pink), #ff0066);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+
+      .gradient-text-green {
+        background: linear-gradient(90deg, var(--neon-green), #00cc88);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+
+      .card-bg {
+        background-color: var(--card-bg);
+        backdrop-filter: blur(10px);
+      }
+
+      .code-block {
+        background-color: var(--darker-bg);
+        border-left: 4px solid var(--neon-blue);
+        position: relative;
+      }
+
+      .yaml-key {
+        color: var(--neon-purple);
+      }
+
+      .yaml-value {
+        color: var(--neon-green);
+      }
+
+      .yaml-string {
+        color: #ffcc00;
+      }
+
+      .yaml-comment {
+        color: #6b7280;
+      }
+
+      .line-explanation {
+        transition: all 0.3s ease;
+      }
+
+      .line-explanation:hover {
+        background-color: rgba(0, 217, 255, 0.05);
+        border-left: 3px solid var(--neon-blue);
+      }
+
+      .note-tip {
+        border-left: 4px solid var(--neon-green);
+        background-color: rgba(0, 255, 157, 0.05);
+      }
+
+      .note-warning {
+        border-left: 4px solid var(--neon-pink);
+        background-color: rgba(255, 42, 109, 0.05);
+      }
+
+      .note-info {
+        border-left: 4px solid var(--neon-blue);
+        background-color: rgba(0, 217, 255, 0.05);
+      }
+
+      .note-important {
+        border-left: 4px solid var(--neon-purple);
+        background-color: rgba(185, 103, 255, 0.05);
+      }
+
+      .k8s-badge {
+        display: inline-block;
+        background: linear-gradient(45deg, #326ce5, #1e4fd8);
+        color: white;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        font-family: 'Fira Code', monospace;
+      }
+
+      .architecture-box {
+        transition: all 0.3s ease;
+      }
+
+      .architecture-box:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(0, 217, 255, 0.2);
+      }
+
+      .line-number {
+        color: #6b7280;
+        user-select: none;
+        min-width: 2rem;
+        text-align: right;
+      }
+
+      @media (max-width: 768px) {
+        .mobile-stack {
+          flex-direction: column;
+        }
+
+        .code-block {
+          font-size: 0.85rem;
+          overflow-x: auto;
+        }
+
+        .line-number {
+          min-width: 1.5rem;
+          font-size: 0.8rem;
+        }
+      }
+    </style>
+  </head>
+  <body class="p-4 md:p-6 lg:p-8">
+    <!-- Header Section -->
+    <header class="mb-10 md:mb-12">
+      <div
+        class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4"
+      >
+        <div>
+          <h1
+            class="text-3xl md:text-4xl lg:text-5xl font-bold mb-2 gradient-text-blue"
+          >
+            <i class="fas fa-code section-icon"></i>Kubernetes YAML Complete
+            Guide
+          </h1>
+          <p class="text-lg text-gray-300">
+            Every line explained - From Deployment to Ingress
+          </p>
+        </div>
+        <div class="flex items-center space-x-2">
+          <span
+            class="px-3 py-1 rounded-full text-sm font-medium card-bg neon-border"
+          >
+            <i class="fas fa-cube text-neon-blue mr-1"></i> Deployment
+          </span>
+          <span
+            class="px-3 py-1 rounded-full text-sm font-medium card-bg neon-border"
+          >
+            <i class="fas fa-server text-neon-purple mr-1"></i> Service
+          </span>
+          <span
+            class="px-3 py-1 rounded-full text-sm font-medium card-bg neon-border"
+          >
+            <i class="fas fa-road text-neon-green mr-1"></i> Ingress
+          </span>
+        </div>
+      </div>
+
+      <div class="card-bg rounded-2xl p-6 neon-border mb-8">
+        <div class="flex items-center mb-4">
+          <i class="fas fa-brain text-neon-purple text-2xl mr-4"></i>
+          <div>
+            <h3 class="text-xl font-bold gradient-text-purple">
+              What You're Building
+            </h3>
+            <p class="text-gray-400">
+              Complete production-ready Kubernetes configuration
+            </p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div
+            class="text-center p-4 rounded-xl"
+            style="background: rgba(0, 217, 255, 0.1)"
+          >
+            <div
+              class="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 flex items-center justify-center mx-auto mb-2"
+            >
+              <i class="fas fa-cubes text-white"></i>
+            </div>
+            <p class="font-bold">Backend Deployment</p>
+            <p class="text-xs text-gray-400">
+              2 replicas, health checks, limits
+            </p>
+          </div>
+
+          <div
+            class="text-center p-4 rounded-xl"
+            style="background: rgba(185, 103, 255, 0.1)"
+          >
+            <div
+              class="w-12 h-12 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center mx-auto mb-2"
+            >
+              <i class="fas fa-network-wired text-white"></i>
+            </div>
+            <p class="font-bold">Services</p>
+            <p class="text-xs text-gray-400">Internal networking, DNS</p>
+          </div>
+
+          <div
+            class="text-center p-4 rounded-xl"
+            style="background: rgba(0, 255, 157, 0.1)"
+          >
+            <div
+              class="w-12 h-12 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 flex items-center justify-center mx-auto mb-2"
+            >
+              <i class="fas fa-desktop text-white"></i>
+            </div>
+            <p class="font-bold">Frontend Deployment</p>
+            <p class="text-xs text-gray-400">Nginx + React</p>
+          </div>
+
+          <div
+            class="text-center p-4 rounded-xl"
+            style="background: rgba(255, 204, 0, 0.1)"
+          >
+            <div
+              class="w-12 h-12 rounded-full bg-gradient-to-r from-yellow-500 to-orange-500 flex items-center justify-center mx-auto mb-2"
+            >
+              <i class="fas fa-globe text-white"></i>
+            </div>
+            <p class="font-bold">Ingress Router</p>
+            <p class="text-xs text-gray-400">Domain-based routing</p>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto">
+      <!-- Section 1: Backend Deployment -->
+      <section class="mb-12 md:mb-16">
+        <div class="flex items-center mb-6">
+          <div
+            class="bg-gradient-to-r from-blue-500 to-cyan-400 p-3 rounded-xl mr-4"
+          >
+            <i class="fas fa-cubes text-white text-2xl"></i>
+          </div>
+          <div>
+            <h2 class="text-2xl md:text-3xl font-bold gradient-text-blue">
+              Backend Deployment
+            </h2>
+            <p class="text-gray-400">
+              Production-grade configuration with health checks and limits
+            </p>
+          </div>
+        </div>
+
+        <div class="card-bg rounded-2xl p-6 neon-border mb-6">
+          <div class="flex items-center mb-4">
+            <i class="fas fa-file-code text-neon-blue text-xl mr-3"></i>
+            <h3 class="text-xl font-bold gradient-text-blue">
+              Complete YAML File
+            </h3>
+            <span class="ml-auto text-sm text-gray-400"
+              >k8s/backend-deployment.yaml</span
+            >
+          </div>
+
+          <!-- The YAML Code Block -->
+          <div class="code-block rounded-lg p-4 mb-6">
+            <div class="flex items-center mb-4">
+              <div class="h-3 w-3 rounded-full bg-red-500 mr-2"></div>
+              <div class="h-3 w-3 rounded-full bg-yellow-500 mr-2"></div>
+              <div class="h-3 w-3 rounded-full bg-green-500 mr-2"></div>
+              <span class="text-sm text-gray-400 ml-2"
+                >backend-deployment.yaml</span
+              >
+            </div>
+
+            <div class="overflow-x-auto">
+              <div class="min-w-max">
+                <!-- Line 1 -->
+                <div class="flex line-explanation p-2">
+                  <div class="line-number mr-4">1</div>
+                  <div class="flex-1">
+                    <code
+                      ><span class="yaml-key">apiVersion</span>:
+                      <span class="yaml-value">apps/v1</span></code
+                    >
+                  </div>
+                </div>
+
+                <!-- Line 2 -->
+                <div class="flex line-explanation p-2">
+                  <div class="line-number mr-4">2</div>
+                  <div class="flex-1">
+                    <code
+                      ><span class="yaml-key">kind</span>:
+                      <span class="yaml-string">Deployment</span></code
+                    >
+                  </div>
+                </div>
+
+                <!-- Line 3 -->
+                <div class="flex line-explanation p-2">
+                  <div class="line-number mr-4">3</div>
+                  <div class="flex-1">
+                    <code><span class="yaml-key">metadata</span>:</code>
+                  </div>
+                </div>
+
+                <!-- Line 4 -->
+                <div class="flex line-explanation p-2 pl-8">
+                  <div class="line-number mr-4">4</div>
+                  <div class="flex-1">
+                    <code
+                      ><span class="yaml-key">name</span>:
+                      <span class="yaml-string">backend-deployment</span></code
+                    >
+                  </div>
+                </div>
+
+                <!-- Line 5 -->
+                <div class="flex line-explanation p-2">
+                  <div class="line-number mr-4">5</div>
+                  <div class="flex-1">
+                    <code><span class="yaml-key">spec</span>:</code>
+                  </div>
+                </div>
+
+                <!-- Line 6 -->
+                <div class="flex line-explanation p-2 pl-8">
+                  <div class="line-number mr-4">6</div>
+                  <div class="flex-1">
+                    <code
+                      ><span class="yaml-key">replicas</span>:
+                      <span class="yaml-value">2</span></code
+                    >
+                  </div>
+                </div>
+
+                <!-- Line 7 -->
+                <div class="flex line-explanation p-2 pl-8">
+                  <div class="line-number mr-4">7</div>
+                  <div class="flex-1">
+                    <code><span class="yaml-key">selector</span>:</code>
+                  </div>
+                </div>
+
+                <!-- Line 8 -->
+                <div class="flex line-explanation p-2 pl-16">
+                  <div class="line-number mr-4">8</div>
+                  <div class="flex-1">
+                    <code><span class="yaml-key">matchLabels</span>:</code>
+                  </div>
+                </div>
+
+                <!-- Line 9 -->
+                <div class="flex line-explanation p-2 pl-24">
+                  <div class="line-number mr-4">9</div>
+                  <div class="flex-1">
+                    <code
+                      ><span class="yaml-key">app</span>:
+                      <span class="yaml-string">backend</span></code
+                    >
+                  </div>
+                </div>
+
+                <!-- Line 10 -->
+                <div class="flex line-explanation p-2 pl-8">
+                  <div class="line-number mr-4">10</div>
+                  <div class="flex-1">
+                    <code><span class="yaml-key">template</span>:</code>
+                  </div>
+                </div>
+
+                <!-- Line 11 -->
+                <div class="flex line-explanation p-2 pl-16">
+                  <div class="line-number mr-4">11</div>
+                  <div class="flex-1">
+                    <code><span class="yaml-key">metadata</span>:</code>
+                  </div>
+                </div>
+
+                <!-- Line 12 -->
+                <div class="flex line-explanation p-2 pl-24">
+                  <div class="line-number mr-4">12</div>
+                  <div class="flex-1">
+                    <code><span class="yaml-key">labels</span>:</code>
+                  </div>
+                </div>
+
+                <!-- Line 13 -->
+                <div class="flex line-explanation p-2 pl-32">
+                  <div class="line-number mr-4">13</div>
+                  <div class="flex-1">
+                    <code
+                      ><span class="yaml-key">app</span>:
+                      <span class="yaml-string">backend</span></code
+                    >
+                  </div>
+                </div>
+
+                <!-- Line 14 -->
+                <div class="flex line-explanation p-2 pl-16">
+                  <div class="line-number mr-4">14</div>
+                  <div class="flex-1">
+                    <code><span class="yaml-key">spec</span>:</code>
+                  </div>
+                </div>
+
+                <!-- Line 15 -->
+                <div class="flex line-explanation p-2 pl-24">
+                  <div class="line-number mr-4">15</div>
+                  <div class="flex-1">
+                    <code><span class="yaml-key">containers</span>:</code>
+                  </div>
+                </div>
+
+                <!-- Line 16 -->
+                <div class="flex line-explanation p-2 pl-32">
+                  <div class="line-number mr-4">16</div>
+                  <div class="flex-1">
+                    <code
+                      >- <span class="yaml-key">name</span>:
+                      <span class="yaml-string">backend</span></code
+                    >
+                  </div>
+                </div>
+
+                <!-- Line 17 -->
+                <div class="flex line-explanation p-2 pl-32">
+                  <div class="line-number mr-4">17</div>
+                  <div class="flex-1">
+                    <code
+                      ><span class="yaml-key">image</span>:
+                      <span class="yaml-string"
+                        >amiitdev/shopify-backend:latest</span
+                      ></code
+                    >
+                  </div>
+                </div>
+
+                <!-- Line 18 -->
+                <div class="flex line-explanation p-2 pl-32">
+                  <div class="line-number mr-4">18</div>
+                  <div class="flex-1">
+                    <code><span class="yaml-key">ports</span>:</code>
+                  </div>
+                </div>
+
+                <!-- Line 19 -->
+                <div class="flex line-explanation p-2 pl-40">
+                  <div class="line-number mr-4">19</div>
+                  <div class="flex-1">
+                    <code
+                      >- <span class="yaml-key">containerPort</span>:
+                      <span class="yaml-value">3000</span></code
+                    >
+                  </div>
+                </div>
+
+                <!-- Line 20 -->
+                <div class="flex line-explanation p-2 pl-32">
+                  <div class="line-number mr-4">20</div>
+                  <div class="flex-1">
+                    <code><span class="yaml-key">envFrom</span>:</code>
+                  </div>
+                </div>
+
+                <!-- Line 21 -->
+                <div class="flex line-explanation p-2 pl-40">
+                  <div class="line-number mr-4">21</div>
+                  <div class="flex-1">
+                    <code>- <span class="yaml-key">secretRef</span>:</code>
+                  </div>
+                </div>
+
+                <!-- Line 22 -->
+                <div class="flex line-explanation p-2 pl-48">
+                  <div class="line-number mr-4">22</div>
+                  <div class="flex-1">
+                    <code
+                      ><span class="yaml-key">name</span>:
+                      <span class="yaml-string">shopify-secret</span></code
+                    >
+                  </div>
+                </div>
+
+                <!-- Line 23 -->
+                <div class="flex line-explanation p-2 pl-32">
+                  <div class="line-number mr-4">23</div>
+                  <div class="flex-1">
+                    <code><span class="yaml-key">resources</span>:</code>
+                  </div>
+                </div>
+
+                <!-- Line 24 -->
+                <div class="flex line-explanation p-2 pl-40">
+                  <div class="line-number mr-4">24</div>
+                  <div class="flex-1">
+                    <code><span class="yaml-key">requests</span>:</code>
+                  </div>
+                </div>
+
+                <!-- Line 25 -->
+                <div class="flex line-explanation p-2 pl-48">
+                  <div class="line-number mr-4">25</div>
+                  <div class="flex-1">
+                    <code
+                      ><span class="yaml-key">memory</span>:
+                      <span class="yaml-string">'128Mi'</span></code
+                    >
+                  </div>
+                </div>
+
+                <!-- Line 26 -->
+                <div class="flex line-explanation p-2 pl-48">
+                  <div class="line-number mr-4">26</div>
+                  <div class="flex-1">
+                    <code
+                      ><span class="yaml-key">cpu</span>:
+                      <span class="yaml-string">'100m'</span></code
+                    >
+                  </div>
+                </div>
+
+                <!-- Line 27 -->
+                <div class="flex line-explanation p-2 pl-40">
+                  <div class="line-number mr-4">27</div>
+                  <div class="flex-1">
+                    <code><span class="yaml-key">limits</span>:</code>
+                  </div>
+                </div>
+
+                <!-- Line 28 -->
+                <div class="flex line-explanation p-2 pl-48">
+                  <div class="line-number mr-4">28</div>
+                  <div class="flex-1">
+                    <code
+                      ><span class="yaml-key">memory</span>:
+                      <span class="yaml-string">'256Mi'</span></code
+                    >
+                  </div>
+                </div>
+
+                <!-- Line 29 -->
+                <div class="flex line-explanation p-2 pl-48">
+                  <div class="line-number mr-4">29</div>
+                  <div class="flex-1">
+                    <code
+                      ><span class="yaml-key">cpu</span>:
+                      <span class="yaml-string">'500m'</span></code
+                    >
+                  </div>
+                </div>
+
+                <!-- Line 30 -->
+                <div class="flex line-explanation p-2 pl-32">
+                  <div class="line-number mr-4">30</div>
+                  <div class="flex-1">
+                    <code><span class="yaml-key">readinessProbe</span>:</code>
+                  </div>
+                </div>
+
+                <!-- Line 31 -->
+                <div class="flex line-explanation p-2 pl-40">
+                  <div class="line-number mr-4">31</div>
+                  <div class="flex-1">
+                    <code><span class="yaml-key">httpGet</span>:</code>
+                  </div>
+                </div>
+
+                <!-- Line 32 -->
+                <div class="flex line-explanation p-2 pl-48">
+                  <div class="line-number mr-4">32</div>
+                  <div class="flex-1">
+                    <code
+                      ><span class="yaml-key">path</span>:
+                      <span class="yaml-string">/health</span></code
+                    >
+                  </div>
+                </div>
+
+                <!-- Line 33 -->
+                <div class="flex line-explanation p-2 pl-48">
+                  <div class="line-number mr-4">33</div>
+                  <div class="flex-1">
+                    <code
+                      ><span class="yaml-key">port</span>:
+                      <span class="yaml-value">3000</span></code
+                    >
+                  </div>
+                </div>
+
+                <!-- Line 34 -->
+                <div class="flex line-explanation p-2 pl-40">
+                  <div class="line-number mr-4">34</div>
+                  <div class="flex-1">
+                    <code
+                      ><span class="yaml-key">initialDelaySeconds</span>:
+                      <span class="yaml-value">5</span></code
+                    >
+                  </div>
+                </div>
+
+                <!-- Line 35 -->
+                <div class="flex line-explanation p-2 pl-40">
+                  <div class="line-number mr-4">35</div>
+                  <div class="flex-1">
+                    <code
+                      ><span class="yaml-key">periodSeconds</span>:
+                      <span class="yaml-value">5</span></code
+                    >
+                  </div>
+                </div>
+
+                <!-- Line 36 -->
+                <div class="flex line-explanation p-2 pl-32">
+                  <div class="line-number mr-4">36</div>
+                  <div class="flex-1">
+                    <code><span class="yaml-key">livenessProbe</span>:</code>
+                  </div>
+                </div>
+
+                <!-- Line 37 -->
+                <div class="flex line-explanation p-2 pl-40">
+                  <div class="line-number mr-4">37</div>
+                  <div class="flex-1">
+                    <code><span class="yaml-key">httpGet</span>:</code>
+                  </div>
+                </div>
+
+                <!-- Line 38 -->
+                <div class="flex line-explanation p-2 pl-48">
+                  <div class="line-number mr-4">38</div>
+                  <div class="flex-1">
+                    <code
+                      ><span class="yaml-key">path</span>:
+                      <span class="yaml-string">/health</span></code
+                    >
+                  </div>
+                </div>
+
+                <!-- Line 39 -->
+                <div class="flex line-explanation p-2 pl-48">
+                  <div class="line-number mr-4">39</div>
+                  <div class="flex-1">
+                    <code
+                      ><span class="yaml-key">port</span>:
+                      <span class="yaml-value">3000</span></code
+                    >
+                  </div>
+                </div>
+
+                <!-- Line 40 -->
+                <div class="flex line-explanation p-2 pl-40">
+                  <div class="line-number mr-4">40</div>
+                  <div class="flex-1">
+                    <code
+                      ><span class="yaml-key">initialDelaySeconds</span>:
+                      <span class="yaml-value">10</span></code
+                    >
+                  </div>
+                </div>
+
+                <!-- Line 41 -->
+                <div class="flex line-explanation p-2 pl-40">
+                  <div class="line-number mr-4">41</div>
+                  <div class="flex-1">
+                    <code
+                      ><span class="yaml-key">periodSeconds</span>:
+                      <span class="yaml-value">10</span></code
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Line-by-Line Explanation -->
+          <div class="mb-6">
+            <h4 class="font-bold text-lg mb-4 gradient-text-green">
+              <i class="fas fa-microscope mr-2"></i>Line-by-Line Deep Dive
+            </h4>
+
+            <div class="space-y-4">
+              <!-- Line 1 -->
+              <div class="note-info p-4 rounded-lg">
+                <div class="flex items-start">
+                  <div
+                    class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center mr-3 mt-1"
+                  >
+                    <span class="text-white font-bold">1</span>
+                  </div>
+                  <div>
+                    <h5 class="font-bold mb-1">
+                      <code>apiVersion: apps/v1</code>
+                    </h5>
+                    <p class="text-gray-300">
+                      This tells Kubernetes we're using the
+                      <span class="font-bold">apps API group, version v1</span>.
+                      Deployments belong to this group.
+                    </p>
+                    <p class="text-sm text-gray-400 mt-1">
+                      🤔 <strong>Why?</strong> Different Kubernetes objects live
+                      in different API groups. Services use
+                      <code>apiVersion: v1</code> (core group), Deployments use
+                      <code>apps/v1</code>.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Line 2 -->
+              <div class="note-info p-4 rounded-lg">
+                <div class="flex items-start">
+                  <div
+                    class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center mr-3 mt-1"
+                  >
+                    <span class="text-white font-bold">2</span>
+                  </div>
+                  <div>
+                    <h5 class="font-bold mb-1">
+                      <code>kind: Deployment</code>
+                    </h5>
+                    <p class="text-gray-300">
+                      We are creating a
+                      <span class="font-bold gradient-text-blue"
+                        >Deployment</span
+                      >
+                      object.
+                    </p>
+                    <p class="text-sm text-gray-400 mt-1">
+                      🤔 <strong>Why Deployment and not Pod?</strong> Deployment
+                      gives you:
+                    </p>
+                    <ul
+                      class="list-disc pl-5 text-sm text-gray-400 mt-1 space-y-1"
+                    >
+                      <li>Auto-restart if pod crashes</li>
+                      <li>Scaling (replicas)</li>
+                      <li>Rolling updates (zero downtime)</li>
+                      <li>Self-healing</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Lines 3-4 -->
+              <div class="note-info p-4 rounded-lg">
+                <div class="flex items-start">
+                  <div
+                    class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center mr-3 mt-1"
+                  >
+                    <span class="text-white font-bold">3-4</span>
+                  </div>
+                  <div>
+                    <h5 class="font-bold mb-1">
+                      <code>metadata: name: backend-deployment</code>
+                    </h5>
+                    <p class="text-gray-300">
+                      The name of this Deployment object in Kubernetes.
+                    </p>
+                    <p class="text-sm text-gray-400 mt-1">
+                      🤔 <strong>Why name matters:</strong> You use this name to
+                      control the deployment:
+                    </p>
+                    <div class="code-block rounded p-2 mt-2">
+                      <code class="text-xs"
+                        >kubectl rollout restart deployment
+                        backend-deployment<br />kubectl scale deployment
+                        backend-deployment --replicas=3<br />kubectl describe
+                        deployment backend-deployment</code
+                      >
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Line 6 -->
+              <div class="note-important p-4 rounded-lg">
+                <div class="flex items-start">
+                  <div
+                    class="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center mr-3 mt-1"
+                  >
+                    <span class="text-white font-bold">6</span>
+                  </div>
+                  <div>
+                    <h5 class="font-bold mb-1"><code>replicas: 2</code></h5>
+                    <p class="text-gray-300">
+                      We want
+                      <span class="font-bold gradient-text-purple"
+                        >2 identical pods</span
+                      >
+                      running.
+                    </p>
+                    <p class="text-sm text-gray-400 mt-1">
+                      🤔 <strong>Why 2 replicas?</strong>
+                    </p>
+                    <div class="grid grid-cols-2 gap-2 mt-2">
+                      <div class="p-2 rounded bg-gray-800">
+                        <p class="text-xs font-bold">High Availability</p>
+                        <p class="text-xs text-gray-400">
+                          If one crashes, other still serves
+                        </p>
+                      </div>
+                      <div class="p-2 rounded bg-gray-800">
+                        <p class="text-xs font-bold">Load Distribution</p>
+                        <p class="text-xs text-gray-400">
+                          Traffic shared between 2 pods
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Lines 7-9 -->
+              <div class="note-warning p-4 rounded-lg">
+                <div class="flex items-start">
+                  <div
+                    class="w-8 h-8 rounded-full bg-pink-500 flex items-center justify-center mr-3 mt-1"
+                  >
+                    <span class="text-white font-bold">7-9</span>
+                  </div>
+                  <div>
+                    <h5 class="font-bold mb-1">
+                      <code>selector: matchLabels: app: backend</code>
+                    </h5>
+                    <p class="text-gray-300">
+                      Deployment selects Pods with label
+                      <span class="font-mono bg-gray-800 px-2 py-1 rounded"
+                        >app: backend</span
+                      >.
+                    </p>
+                    <p class="text-sm text-gray-400 mt-1">
+                      🤔 <strong>CRITICAL CONCEPT:</strong> Deployment must know
+                      which Pods it manages. This selector MUST match the Pod
+                      template labels (lines 12-13).
+                    </p>
+                    <p class="text-sm text-red-400 mt-2">
+                      ⚠️ If mismatch: Deployment creates pods but can't manage
+                      them!
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Lines 12-13 -->
+              <div class="note-info p-4 rounded-lg">
+                <div class="flex items-start">
+                  <div
+                    class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center mr-3 mt-1"
+                  >
+                    <span class="text-white font-bold">12-13</span>
+                  </div>
+                  <div>
+                    <h5 class="font-bold mb-1">
+                      <code>labels: app: backend</code>
+                    </h5>
+                    <p class="text-gray-300">
+                      Every Pod created gets this label.
+                    </p>
+                    <p class="text-sm text-gray-400 mt-1">
+                      🤔 <strong>Why labels matter:</strong>
+                    </p>
+                    <ul
+                      class="list-disc pl-5 text-sm text-gray-400 mt-1 space-y-1"
+                    >
+                      <li>Deployment selector matches this (management)</li>
+                      <li>Service selector matches this (networking)</li>
+                      <li>
+                        You can query pods by label:
+                        <code>kubectl get pods -l app=backend</code>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Line 16 -->
+              <div class="note-info p-4 rounded-lg">
+                <div class="flex items-start">
+                  <div
+                    class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center mr-3 mt-1"
+                  >
+                    <span class="text-white font-bold">16</span>
+                  </div>
+                  <div>
+                    <h5 class="font-bold mb-1"><code>name: backend</code></h5>
+                    <p class="text-gray-300">Container name inside the Pod.</p>
+                    <p class="text-sm text-gray-400 mt-1">
+                      🤔 <strong>Why name containers?</strong> Useful for:
+                    </p>
+                    <div class="grid grid-cols-2 gap-2 mt-2">
+                      <div class="p-2 rounded bg-gray-800">
+                        <p class="text-xs">Multi-container pods</p>
+                      </div>
+                      <div class="p-2 rounded bg-gray-800">
+                        <p class="text-xs">
+                          Logs: <code>kubectl logs pod-name -c backend</code>
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Line 17 -->
+              <div class="note-important p-4 rounded-lg">
+                <div class="flex items-start">
+                  <div
+                    class="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center mr-3 mt-1"
+                  >
+                    <span class="text-white font-bold">17</span>
+                  </div>
+                  <div>
+                    <h5 class="font-bold mb-1">
+                      <code>image: amiitdev/shopify-backend:latest</code>
+                    </h5>
+                    <p class="text-gray-300">The Docker image to run.</p>
+                    <p class="text-sm text-gray-400 mt-1">
+                      🤔 <strong>What's in this image?</strong>
+                    </p>
+                    <ul
+                      class="list-disc pl-5 text-sm text-gray-400 mt-1 space-y-1"
+                    >
+                      <li>Your Node.js/Express application</li>
+                      <li>Compiled from your source code</li>
+                      <li>Published to Docker Hub by CI/CD</li>
+                      <li>
+                        Tagged as <code>:latest</code> (in production, use
+                        specific versions!)
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Lines 18-19 -->
+              <div class="note-info p-4 rounded-lg">
+                <div class="flex items-start">
+                  <div
+                    class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center mr-3 mt-1"
+                  >
+                    <span class="text-white font-bold">18-19</span>
+                  </div>
+                  <div>
+                    <h5 class="font-bold mb-1">
+                      <code>ports: containerPort: 3000</code>
+                    </h5>
+                    <p class="text-gray-300">Container listens on port 3000.</p>
+                    <p class="text-sm text-gray-400 mt-1">
+                      🤔 <strong>Why declare ports?</strong>
+                    </p>
+                    <div class="grid grid-cols-2 gap-2 mt-2">
+                      <div class="p-2 rounded bg-gray-800">
+                        <p class="text-xs">Informational for Kubernetes</p>
+                      </div>
+                      <div class="p-2 rounded bg-gray-800">
+                        <p class="text-xs">Used by Services & Probes</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Lines 20-22 -->
+              <div class="note-tip p-4 rounded-lg">
+                <div class="flex items-start">
+                  <div
+                    class="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center mr-3 mt-1"
+                  >
+                    <span class="text-white font-bold">20-22</span>
+                  </div>
+                  <div>
+                    <h5 class="font-bold mb-1">
+                      <code>envFrom: secretRef: name: shopify-secret</code>
+                    </h5>
+                    <p class="text-gray-300">
+                      Inject environment variables from Kubernetes Secret.
+                    </p>
+                    <p class="text-sm text-gray-400 mt-1">
+                      🤔 <strong>Why Secrets not environment variables?</strong>
+                    </p>
+                    <ul
+                      class="list-disc pl-5 text-sm text-gray-400 mt-1 space-y-1"
+                    >
+                      <li>
+                        <span class="font-bold">Security:</span> Secrets are
+                        encrypted at rest
+                      </li>
+                      <li>
+                        <span class="font-bold">Separation:</span> Configuration
+                        vs credentials
+                      </li>
+                      <li>
+                        <span class="font-bold">Rotation:</span> Change secrets
+                        without rebuilding image
+                      </li>
+                    </ul>
+                    <p class="text-sm mt-2">Inside container, these become:</p>
+                    <div class="code-block rounded p-2 mt-1">
+                      <code class="text-xs"
+                        >process.env.MONGO_URI<br />process.env.JWT_SECRET<br />process.env.CLOUD_NAME</code
+                      >
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Lines 23-29: Resources -->
+              <div class="note-warning p-4 rounded-lg">
+                <div class="flex items-start">
+                  <div
+                    class="w-8 h-8 rounded-full bg-pink-500 flex items-center justify-center mr-3 mt-1"
+                  >
+                    <span class="text-white font-bold">23-29</span>
+                  </div>
+                  <div>
+                    <h5 class="font-bold mb-1">
+                      <code>resources: requests & limits</code>
+                    </h5>
+                    <p class="text-gray-300">
+                      CPU and memory limits for the container.
+                    </p>
+                    <p class="text-sm text-gray-400 mt-1">
+                      🤔 <strong>CRITICAL FOR PRODUCTION:</strong>
+                    </p>
+
+                    <div class="grid grid-cols-2 gap-4 mt-3">
+                      <div>
+                        <div
+                          class="p-3 rounded-xl"
+                          style="background: rgba(0, 255, 157, 0.1)"
+                        >
+                          <p class="font-bold text-sm mb-2">Requests</p>
+                          <p class="text-xs font-mono">memory: '128Mi'</p>
+                          <p class="text-xs font-mono">cpu: '100m'</p>
+                          <p class="text-xs text-gray-400 mt-2">
+                            <strong>Minimum</strong> needed to run
+                          </p>
+                        </div>
+                      </div>
+                      <div>
+                        <div
+                          class="p-3 rounded-xl"
+                          style="background: rgba(255, 42, 109, 0.1)"
+                        >
+                          <p class="font-bold text-sm mb-2">Limits</p>
+                          <p class="text-xs font-mono">memory: '256Mi'</p>
+                          <p class="text-xs font-mono">cpu: '500m'</p>
+                          <p class="text-xs text-gray-400 mt-2">
+                            <strong>Maximum</strong> allowed
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <p class="text-sm text-gray-400 mt-3">
+                      ✅ <strong>Why limits matter:</strong>
+                    </p>
+                    <ul
+                      class="list-disc pl-5 text-sm text-gray-400 mt-1 space-y-1"
+                    >
+                      <li>Prevents one pod from eating all memory</li>
+                      <li>Prevents node crash (OOM Killer)</li>
+                      <li>Allows proper scheduling</li>
+                      <li>Required for auto-scaling (HPA)</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Lines 30-35: Readiness Probe -->
+              <div class="note-important p-4 rounded-lg">
+                <div class="flex items-start">
+                  <div
+                    class="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center mr-3 mt-1"
+                  >
+                    <span class="text-white font-bold">30-35</span>
+                  </div>
+                  <div>
+                    <h5 class="font-bold mb-1"><code>readinessProbe</code></h5>
+                    <p class="text-gray-300">
+                      Checks if pod is ready to receive traffic.
+                    </p>
+                    <p class="text-sm text-gray-400 mt-1">
+                      🤔 <strong>What it does:</strong>
+                    </p>
+                    <div class="flex items-center mt-2">
+                      <div class="text-center mr-4">
+                        <div
+                          class="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center"
+                        >
+                          <i class="fas fa-check text-white"></i>
+                        </div>
+                        <p class="text-xs mt-1">200 OK</p>
+                      </div>
+                      <div class="flex-1">
+                        <p class="text-sm">
+                          Kubernetes sends:
+                          <code>GET http://pod-ip:3000/health</code>
+                        </p>
+                        <p class="text-xs text-gray-400">
+                          If response is 200 → pod is ready
+                        </p>
+                      </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2 mt-3">
+                      <div class="p-2 rounded bg-gray-800">
+                        <p class="text-xs font-bold">initialDelaySeconds: 5</p>
+                        <p class="text-xs text-gray-400">Wait 5s after start</p>
+                      </div>
+                      <div class="p-2 rounded bg-gray-800">
+                        <p class="text-xs font-bold">periodSeconds: 5</p>
+                        <p class="text-xs text-gray-400">Check every 5s</p>
+                      </div>
+                    </div>
+
+                    <p class="text-sm text-gray-400 mt-3">
+                      ✅ <strong>Consequence if fails:</strong> Pod removed from
+                      Service load balancer. No traffic sent until healthy.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Lines 36-41: Liveness Probe -->
+              <div class="note-important p-4 rounded-lg">
+                <div class="flex items-start">
+                  <div
+                    class="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center mr-3 mt-1"
+                  >
+                    <span class="text-white font-bold">36-41</span>
+                  </div>
+                  <div>
+                    <h5 class="font-bold mb-1"><code>livenessProbe</code></h5>
+                    <p class="text-gray-300">
+                      Checks if container is alive and should be restarted.
+                    </p>
+
+                    <div class="flex items-center mt-2">
+                      <div class="text-center mr-4">
+                        <div
+                          class="w-10 h-10 rounded-full bg-red-500 flex items-center justify-center"
+                        >
+                          <i class="fas fa-heartbeat text-white"></i>
+                        </div>
+                        <p class="text-xs mt-1">Fails</p>
+                      </div>
+                      <div class="flex-1">
+                        <p class="text-sm">
+                          If <code>/health</code> fails repeatedly
+                        </p>
+                        <p class="text-xs text-gray-400">
+                          Kubernetes kills and restarts container
+                        </p>
+                      </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2 mt-3">
+                      <div class="p-2 rounded bg-gray-800">
+                        <p class="text-xs font-bold">initialDelaySeconds: 10</p>
+                        <p class="text-xs text-gray-400">
+                          Wait longer than readiness
+                        </p>
+                      </div>
+                      <div class="p-2 rounded bg-gray-800">
+                        <p class="text-xs font-bold">periodSeconds: 10</p>
+                        <p class="text-xs text-gray-400">Check every 10s</p>
+                      </div>
+                    </div>
+
+                    <p class="text-sm text-gray-400 mt-3">
+                      ✅ <strong>Consequence if fails:</strong> Container
+                      restarted automatically (self-healing).
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Big Picture Summary -->
+          <div class="p-6 rounded-xl" style="background: rgba(17, 17, 31, 0.9)">
+            <h4 class="font-bold text-lg mb-4 gradient-text-blue text-center">
+              <i class="fas fa-eye mr-2"></i>Big Picture: What This File
+              Achieves
+            </h4>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <p class="font-bold mb-2 gradient-text-green">
+                  ✅ Production Features You Get:
+                </p>
+                <ul class="space-y-2 text-sm text-gray-300">
+                  <li class="flex items-start">
+                    <i
+                      class="fas fa-check-circle text-neon-green mt-1 mr-2"
+                    ></i>
+                    <span>High availability (2 replicas)</span>
+                  </li>
+                  <li class="flex items-start">
+                    <i
+                      class="fas fa-check-circle text-neon-green mt-1 mr-2"
+                    ></i>
+                    <span>Automatic self-healing</span>
+                  </li>
+                  <li class="flex items-start">
+                    <i
+                      class="fas fa-check-circle text-neon-green mt-1 mr-2"
+                    ></i>
+                    <span>Resource protection (won't crash node)</span>
+                  </li>
+                  <li class="flex items-start">
+                    <i
+                      class="fas fa-check-circle text-neon-green mt-1 mr-2"
+                    ></i>
+                    <span>Secure credential injection</span>
+                  </li>
+                  <li class="flex items-start">
+                    <i
+                      class="fas fa-check-circle text-neon-green mt-1 mr-2"
+                    ></i>
+                    <span>Zero-downtime rolling updates</span>
+                  </li>
+                </ul>
+              </div>
+
+              <div>
+                <p class="font-bold mb-2 gradient-text-purple">
+                  🧠 Mental Model:
+                </p>
+                <div class="flex items-center">
+                  <div class="text-center mr-4">
+                    <div
+                      class="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center"
+                    >
+                      <i class="fas fa-brain text-white"></i>
+                    </div>
+                    <p class="text-xs mt-1">Deployment</p>
+                  </div>
+                  <div class="text-center mx-4">
+                    <i class="fas fa-arrow-right text-neon-purple"></i>
+                  </div>
+                  <div class="text-center mr-4">
+                    <div
+                      class="w-12 h-12 rounded-full bg-green-500 flex items-center justify-center"
+                    >
+                      <i class="fas fa-user-tie text-white"></i>
+                    </div>
+                    <p class="text-xs mt-1">ReplicaSet</p>
+                  </div>
+                  <div class="text-center mx-4">
+                    <i class="fas fa-arrow-right text-neon-purple"></i>
+                  </div>
+                  <div class="text-center">
+                    <div
+                      class="w-12 h-12 rounded-full bg-yellow-500 flex items-center justify-center"
+                    >
+                      <i class="fas fa-cube text-white"></i>
+                    </div>
+                    <p class="text-xs mt-1">Pod</p>
+                  </div>
+                </div>
+                <p class="text-xs text-gray-400 mt-3">
+                  Deployment (brain) → ReplicaSet (manager) → Pods (workers)
+                </p>
+              </div>
+            </div>
+
+            <div class="mt-6 grid grid-cols-2 gap-4">
+              <div
+                class="text-center p-3 rounded-xl"
+                style="background: rgba(0, 255, 157, 0.1)"
+              >
+                <p class="font-bold">Readiness Probe</p>
+                <p class="text-xs text-gray-400">"Can I take traffic?"</p>
+              </div>
+              <div
+                class="text-center p-3 rounded-xl"
+                style="background: rgba(255, 42, 109, 0.1)"
+              >
+                <p class="font-bold">Liveness Probe</p>
+                <p class="text-xs text-gray-400">"Am I still alive?"</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 2: Backend Service -->
+      <section class="mb-12 md:mb-16">
+        <div class="flex items-center mb-6">
+          <div
+            class="bg-gradient-to-r from-purple-500 to-pink-400 p-3 rounded-xl mr-4"
+          >
+            <i class="fas fa-network-wired text-white text-2xl"></i>
+          </div>
+          <div>
+            <h2 class="text-2xl md:text-3xl font-bold gradient-text-purple">
+              Backend Service
+            </h2>
+            <p class="text-gray-400">Internal networking and DNS discovery</p>
+          </div>
+        </div>
+
+        <div class="card-bg rounded-2xl p-6 neon-border mb-6">
+          <div class="flex items-center mb-4">
+            <i class="fas fa-network-wired text-neon-purple text-xl mr-3"></i>
+            <h3 class="text-xl font-bold gradient-text-purple">
+              Service YAML File
+            </h3>
+            <span class="ml-auto text-sm text-gray-400"
+              >k8s/backend-service.yaml</span
+            >
+          </div>
+
+          <!-- The YAML Code Block -->
+          <div class="code-block rounded-lg p-4 mb-6">
+            <div class="flex items-center mb-4">
+              <div class="h-3 w-3 rounded-full bg-red-500 mr-2"></div>
+              <div class="h-3 w-3 rounded-full bg-yellow-500 mr-2"></div>
+              <div class="h-3 w-3 rounded-full bg-green-500 mr-2"></div>
+              <span class="text-sm text-gray-400 ml-2"
+                >backend-service.yaml</span
+              >
+            </div>
+
+            <div class="overflow-x-auto">
+              <div class="min-w-max">
+                <!-- Line 1 -->
+                <div class="flex line-explanation p-2">
+                  <div class="line-number mr-4">1</div>
+                  <div class="flex-1">
+                    <code
+                      ><span class="yaml-key">apiVersion</span>:
+                      <span class="yaml-value">v1</span></code
+                    >
+                  </div>
+                </div>
+
+                <!-- Line 2 -->
+                <div class="flex line-explanation p-2">
+                  <div class="line-number mr-4">2</div>
+                  <div class="flex-1">
+                    <code
+                      ><span class="yaml-key">kind</span>:
+                      <span class="yaml-string">Service</span></code
+                    >
+                  </div>
+                </div>
+
+                <!-- Line 3 -->
+                <div class="flex line-explanation p-2">
+                  <div class="line-number mr-4">3</div>
+                  <div class="flex-1">
+                    <code><span class="yaml-key">metadata</span>:</code>
+                  </div>
+                </div>
+
+                <!-- Line 4 -->
+                <div class="flex line-explanation p-2 pl-8">
+                  <div class="line-number mr-4">4</div>
+                  <div class="flex-1">
+                    <code
+                      ><span class="yaml-key">name</span>:
+                      <span class="yaml-string">backend</span></code
+                    >
+                  </div>
+                </div>
+
+                <!-- Line 5 -->
+                <div class="flex line-explanation p-2">
+                  <div class="line-number mr-4">5</div>
+                  <div class="flex-1">
+                    <code><span class="yaml-key">spec</span>:</code>
+                  </div>
+                </div>
+
+                <!-- Line 6 -->
+                <div class="flex line-explanation p-2 pl-8">
+                  <div class="line-number mr-4">6</div>
+                  <div class="flex-1">
+                    <code><span class="yaml-key">selector</span>:</code>
+                  </div>
+                </div>
+
+                <!-- Line 7 -->
+                <div class="flex line-explanation p-2 pl-16">
+                  <div class="line-number mr-4">7</div>
+                  <div class="flex-1">
+                    <code
+                      ><span class="yaml-key">app</span>:
+                      <span class="yaml-string">backend</span></code
+                    >
+                  </div>
+                </div>
+
+                <!-- Line 8 -->
+                <div class="flex line-explanation p-2 pl-8">
+                  <div class="line-number mr-4">8</div>
+                  <div class="flex-1">
+                    <code><span class="yaml-key">ports</span>:</code>
+                  </div>
+                </div>
+
+                <!-- Line 9 -->
+                <div class="flex line-explanation p-2 pl-16">
+                  <div class="line-number mr-4">9</div>
+                  <div class="flex-1">
+                    <code
+                      >- <span class="yaml-key">port</span>:
+                      <span class="yaml-value">3000</span></code
+                    >
+                  </div>
+                </div>
+
+                <!-- Line 10 -->
+                <div class="flex line-explanation p-2 pl-24">
+                  <div class="line-number mr-4">10</div>
+                  <div class="flex-1">
+                    <code
+                      ><span class="yaml-key">targetPort</span>:
+                      <span class="yaml-value">3000</span></code
+                    >
+                  </div>
+                </div>
+
+                <!-- Line 11 -->
+                <div class="flex line-explanation p-2 pl-8">
+                  <div class="line-number mr-4">11</div>
+                  <div class="flex-1">
+                    <code
+                      ><span class="yaml-key">type</span>:
+                      <span class="yaml-string">ClusterIP</span></code
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Line-by-Line Explanation -->
+          <div class="mb-6">
+            <h4 class="font-bold text-lg mb-4 gradient-text-green">
+              <i class="fas fa-microscope mr-2"></i>Line-by-Line Deep Dive
+            </h4>
+
+            <div class="space-y-4">
+              <!-- Line 1 -->
+              <div class="note-info p-4 rounded-lg">
+                <div class="flex items-start">
+                  <div
+                    class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center mr-3 mt-1"
+                  >
+                    <span class="text-white font-bold">1</span>
+                  </div>
+                  <div>
+                    <h5 class="font-bold mb-1"><code>apiVersion: v1</code></h5>
+                    <p class="text-gray-300">
+                      We're using the
+                      <span class="font-bold"
+                        >core Kubernetes API group (v1)</span
+                      >.
+                    </p>
+                    <p class="text-sm text-gray-400 mt-1">
+                      🤔 <strong>Why v1 and not apps/v1?</strong> Services
+                      belong to the core API group, not the apps group.
+                      Different resource types live in different API groups.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Line 2 -->
+              <div class="note-info p-4 rounded-lg">
+                <div class="flex items-start">
+                  <div
+                    class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center mr-3 mt-1"
+                  >
+                    <span class="text-white font-bold">2</span>
+                  </div>
+                  <div>
+                    <h5 class="font-bold mb-1"><code>kind: Service</code></h5>
+                    <p class="text-gray-300">
+                      We are creating a
+                      <span class="font-bold gradient-text-purple"
+                        >Service</span
+                      >
+                      object.
+                    </p>
+                    <p class="text-sm text-gray-400 mt-1">
+                      🤔 <strong>Why Service?</strong> Service gives you:
+                    </p>
+                    <ul
+                      class="list-disc pl-5 text-sm text-gray-400 mt-1 space-y-1"
+                    >
+                      <li>Stable internal IP address</li>
+                      <li>DNS name inside the cluster</li>
+                      <li>Load balancing across pods</li>
+                      <li>Abstracts away pod IP changes</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Lines 3-4 -->
+              <div class="note-info p-4 rounded-lg">
+                <div class="flex items-start">
+                  <div
+                    class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center mr-3 mt-1"
+                  >
+                    <span class="text-white font-bold">3-4</span>
+                  </div>
+                  <div>
+                    <h5 class="font-bold mb-1">
+                      <code>metadata: name: backend</code>
+                    </h5>
+                    <p class="text-gray-300">
+                      The name of this Service object.
+                    </p>
+                    <p class="text-sm text-gray-400 mt-1">
+                      🤔 <strong>Why this name matters:</strong> This becomes
+                      your internal DNS name!
+                    </p>
+                    <p class="text-sm text-gray-400 mt-2">
+                      Inside the cluster, frontend can call:
+                    </p>
+                    <div class="code-block rounded p-2 mt-1">
+                      <code class="text-xs">http://backend:3000</code>
+                    </div>
+                    <p class="text-sm text-gray-400 mt-2">
+                      Kubernetes automatically creates DNS entry:
+                    </p>
+                    <div class="code-block rounded p-2 mt-1">
+                      <code class="text-xs"
+                        >backend.default.svc.cluster.local</code
+                      >
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Lines 6-7 -->
+              <div class="note-warning p-4 rounded-lg">
+                <div class="flex items-start">
+                  <div
+                    class="w-8 h-8 rounded-full bg-pink-500 flex items-center justify-center mr-3 mt-1"
+                  >
+                    <span class="text-white font-bold">6-7</span>
+                  </div>
+                  <div>
+                    <h5 class="font-bold mb-1">
+                      <code>selector: app: backend</code>
+                    </h5>
+                    <p class="text-gray-300">
+                      This Service selects pods with label
+                      <span class="font-mono bg-gray-800 px-2 py-1 rounded"
+                        >app: backend</span
+                      >.
+                    </p>
+                    <p class="text-sm text-gray-400 mt-1">
+                      🤔 <strong>CRITICAL:</strong> This must match your
+                      Deployment Pod labels!
+                    </p>
+                    <p class="text-sm text-gray-400 mt-2">
+                      Remember in Deployment:
+                    </p>
+                    <div class="code-block rounded p-2 mt-1">
+                      <code class="text-xs"
+                        >labels:<br />&nbsp;&nbsp;app: backend</code
+                      >
+                    </div>
+                    <p class="text-sm text-red-400 mt-2">
+                      ⚠️ If selector doesn't match labels:
+                    </p>
+                    <ul
+                      class="list-disc pl-5 text-sm text-red-400 mt-1 space-y-1"
+                    >
+                      <li>Service exists but routes to zero pods</li>
+                      <li>App breaks silently</li>
+                      <li>Common Kubernetes bug</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Lines 8-10 -->
+              <div class="note-important p-4 rounded-lg">
+                <div class="flex items-start">
+                  <div
+                    class="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center mr-3 mt-1"
+                  >
+                    <span class="text-white font-bold">8-10</span>
+                  </div>
+                  <div>
+                    <h5 class="font-bold mb-1">
+                      <code>ports: port: 3000 targetPort: 3000</code>
+                    </h5>
+                    <p class="text-gray-300">
+                      Defines port mapping between Service and Pods.
+                    </p>
+                    <p class="text-sm text-gray-400 mt-1">
+                      🤔 <strong>Key difference:</strong>
+                    </p>
+
+                    <div class="grid grid-cols-2 gap-4 mt-3">
+                      <div>
+                        <div
+                          class="p-3 rounded-xl"
+                          style="background: rgba(185, 103, 255, 0.1)"
+                        >
+                          <p class="font-bold text-sm mb-2">port: 3000</p>
+                          <p class="text-xs text-gray-400">
+                            Service port (internal cluster)
+                          </p>
+                          <p class="text-xs font-mono mt-2">
+                            Frontend calls: backend:3000
+                          </p>
+                        </div>
+                      </div>
+                      <div>
+                        <div
+                          class="p-3 rounded-xl"
+                          style="background: rgba(0, 217, 255, 0.1)"
+                        >
+                          <p class="font-bold text-sm mb-2">targetPort: 3000</p>
+                          <p class="text-xs text-gray-400">
+                            Container port (where app listens)
+                          </p>
+                          <p class="text-xs font-mono mt-2">
+                            Container listens: 0.0.0.0:3000
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <p class="text-sm text-gray-400 mt-3">You could also do:</p>
+                    <div class="code-block rounded p-2 mt-1">
+                      <code class="text-xs"
+                        >port: 80<br />targetPort: 3000</code
+                      >
+                    </div>
+                    <p class="text-xs text-gray-400 mt-2">
+                      Then frontend would call <code>backend:80</code> but
+                      traffic would go to container port 3000.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Line 11 -->
+              <div class="note-tip p-4 rounded-lg">
+                <div class="flex items-start">
+                  <div
+                    class="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center mr-3 mt-1"
+                  >
+                    <span class="text-white font-bold">11</span>
+                  </div>
+                  <div>
+                    <h5 class="font-bold mb-1"><code>type: ClusterIP</code></h5>
+                    <p class="text-gray-300">
+                      This Service is accessible
+                      <span class="font-bold">only inside the cluster</span>.
+                    </p>
+                    <p class="text-sm text-gray-400 mt-1">
+                      🤔 <strong>Why ClusterIP for backend?</strong>
+                    </p>
+                    <ul
+                      class="list-disc pl-5 text-sm text-gray-400 mt-1 space-y-1"
+                    >
+                      <li>Backend should NOT be exposed to public internet</li>
+                      <li>Only frontend needs to access backend</li>
+                      <li>Security best practice</li>
+                      <li>Clean internal networking</li>
+                    </ul>
+
+                    <p class="text-sm text-gray-400 mt-3">
+                      📚 <strong>Service Types:</strong>
+                    </p>
+                    <div class="grid grid-cols-2 gap-2 mt-2">
+                      <div class="p-2 rounded bg-gray-800">
+                        <p class="text-xs font-bold">ClusterIP</p>
+                        <p class="text-xs text-gray-400">
+                          Internal only (default)
+                        </p>
+                      </div>
+                      <div class="p-2 rounded bg-gray-800">
+                        <p class="text-xs font-bold">NodePort</p>
+                        <p class="text-xs text-gray-400">
+                          Exposed on node port
+                        </p>
+                      </div>
+                      <div class="p-2 rounded bg-gray-800">
+                        <p class="text-xs font-bold">LoadBalancer</p>
+                        <p class="text-xs text-gray-400">Cloud external LB</p>
+                      </div>
+                      <div class="p-2 rounded bg-gray-800">
+                        <p class="text-xs font-bold">ExternalName</p>
+                        <p class="text-xs text-gray-400">
+                          Maps to external DNS
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Big Picture Summary -->
+          <div class="p-6 rounded-xl" style="background: rgba(17, 17, 31, 0.9)">
+            <h4 class="font-bold text-lg mb-4 gradient-text-purple text-center">
+              <i class="fas fa-eye mr-2"></i>Big Picture: What Happens
+              Internally
+            </h4>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <p class="font-bold mb-2 gradient-text-green">
+                  ✅ What This Service Creates:
+                </p>
+                <ul class="space-y-2 text-sm text-gray-300">
+                  <li class="flex items-start">
+                    <i
+                      class="fas fa-check-circle text-neon-green mt-1 mr-2"
+                    ></i>
+                    <span>Stable virtual IP (10.x.x.x range)</span>
+                  </li>
+                  <li class="flex items-start">
+                    <i
+                      class="fas fa-check-circle text-neon-green mt-1 mr-2"
+                    ></i>
+                    <span>DNS name: backend.default.svc.cluster.local</span>
+                  </li>
+                  <li class="flex items-start">
+                    <i
+                      class="fas fa-check-circle text-neon-green mt-1 mr-2"
+                    ></i>
+                    <span>Load balancing across backend pods</span>
+                  </li>
+                  <li class="flex items-start">
+                    <i
+                      class="fas fa-check-circle text-neon-green mt-1 mr-2"
+                    ></i>
+                    <span>Automatic pod discovery</span>
+                  </li>
+                  <li class="flex items-start">
+                    <i
+                      class="fas fa-check-circle text-neon-green mt-1 mr-2"
+                    ></i>
+                    <span>Abstracts pod IP changes</span>
+                  </li>
+                </ul>
+              </div>
+
+              <div>
+                <p class="font-bold mb-2 gradient-text-blue">
+                  🌐 Network Flow:
+                </p>
+                <div class="flex items-center justify-center">
+                  <div class="text-center">
+                    <div
+                      class="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center"
+                    >
+                      <i class="fas fa-desktop text-white"></i>
+                    </div>
+                    <p class="text-xs mt-1">Frontend</p>
+                  </div>
+                  <div class="text-center mx-2">
+                    <i class="fas fa-arrow-right text-neon-purple"></i>
+                  </div>
+                  <div class="text-center">
+                    <div
+                      class="w-10 h-10 rounded-full bg-purple-500 flex items-center justify-center"
+                    >
+                      <i class="fas fa-network-wired text-white"></i>
+                    </div>
+                    <p class="text-xs mt-1">Service</p>
+                  </div>
+                  <div class="text-center mx-2">
+                    <i class="fas fa-arrow-right text-neon-purple"></i>
+                  </div>
+                  <div class="text-center">
+                    <div
+                      class="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center"
+                    >
+                      <i class="fas fa-cube text-white"></i>
+                    </div>
+                    <p class="text-xs mt-1">Backend Pods</p>
+                  </div>
+                </div>
+                <p class="text-xs text-gray-400 mt-3 text-center">
+                  Frontend → Service (Load Balancer) → Backend Pods
+                </p>
+              </div>
+            </div>
+
+            <div class="mt-6">
+              <p class="font-bold mb-2 gradient-text-pink">
+                🔥 Important Debug Command:
+              </p>
+              <div class="code-block rounded p-3">
+                <code class="text-xs">kubectl get endpoints backend</code>
+                <p class="text-xs text-gray-400 mt-2">
+                  This shows actual pod IPs that the Service is connected to.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 3: Frontend Deployment -->
+      <section class="mb-12 md:mb-16">
+        <div class="flex items-center mb-6">
+          <div
+            class="bg-gradient-to-r from-green-500 to-emerald-400 p-3 rounded-xl mr-4"
+          >
+            <i class="fas fa-desktop text-white text-2xl"></i>
+          </div>
+          <div>
+            <h2 class="text-2xl md:text-3xl font-bold gradient-text-green">
+              Frontend Deployment
+            </h2>
+            <p class="text-gray-400">Nginx + React static application</p>
+          </div>
+        </div>
+
+        <div class="card-bg rounded-2xl p-6 neon-border mb-6">
+          <div class="flex items-center mb-4">
+            <i class="fas fa-file-code text-neon-green text-xl mr-3"></i>
+            <h3 class="text-xl font-bold gradient-text-green">
+              Frontend YAML File
+            </h3>
+            <span class="ml-auto text-sm text-gray-400"
+              >k8s/frontend-deployment.yaml</span
+            >
+          </div>
+
+          <!-- The YAML Code Block -->
+          <div class="code-block rounded-lg p-4 mb-6">
+            <div class="flex items-center mb-4">
+              <div class="h-3 w-3 rounded-full bg-red-500 mr-2"></div>
+              <div class="h-3 w-3 rounded-full bg-yellow-500 mr-2"></div>
+              <div class="h-3 w-3 rounded-full bg-green-500 mr-2"></div>
+              <span class="text-sm text-gray-400 ml-2"
+                >frontend-deployment.yaml</span
+              >
+            </div>
+
+            <div class="overflow-x-auto">
+              <div class="min-w-max">
+                <!-- Line 1 -->
+                <div class="flex line-explanation p-2">
+                  <div class="line-number mr-4">1</div>
+                  <div class="flex-1">
+                    <code
+                      ><span class="yaml-key">apiVersion</span>:
+                      <span class="yaml-value">apps/v1</span></code
+                    >
+                  </div>
+                </div>
+
+                <!-- Line 2 -->
+                <div class="flex line-explanation p-2">
+                  <div class="line-number mr-4">2</div>
+                  <div class="flex-1">
+                    <code
+                      ><span class="yaml-key">kind</span>:
+                      <span class="yaml-string">Deployment</span></code
+                    >
+                  </div>
+                </div>
+
+                <!-- Line 3 -->
+                <div class="flex line-explanation p-2">
+                  <div class="line-number mr-4">3</div>
+                  <div class="flex-1">
+                    <code><span class="yaml-key">metadata</span>:</code>
+                  </div>
+                </div>
+
+                <!-- Line 4 -->
+                <div class="flex line-explanation p-2 pl-8">
+                  <div class="line-number mr-4">4</div>
+                  <div class="flex-1">
+                    <code
+                      ><span class="yaml-key">name</span>:
+                      <span class="yaml-string">frontend-deployment</span></code
+                    >
+                  </div>
+                </div>
+
+                <!-- Line 5 -->
+                <div class="flex line-explanation p-2">
+                  <div class="line-number mr-4">5</div>
+                  <div class="flex-1">
+                    <code><span class="yaml-key">spec</span>:</code>
+                  </div>
+                </div>
+
+                <!-- Line 6 -->
+                <div class="flex line-explanation p-2 pl-8">
+                  <div class="line-number mr-4">6</div>
+                  <div class="flex-1">
+                    <code
+                      ><span class="yaml-key">replicas</span>:
+                      <span class="yaml-value">1</span></code
+                    >
+                  </div>
+                </div>
+
+                <!-- Line 7 -->
+                <div class="flex line-explanation p-2 pl-8">
+                  <div class="line-number mr-4">7</div>
+                  <div class="flex-1">
+                    <code><span class="yaml-key">selector</span>:</code>
+                  </div>
+                </div>
+
+                <!-- Line 8 -->
+                <div class="flex line-explanation p-2 pl-16">
+                  <div class="line-number mr-4">8</div>
+                  <div class="flex-1">
+                    <code><span class="yaml-key">matchLabels</span>:</code>
+                  </div>
+                </div>
+
+                <!-- Line 9 -->
+                <div class="flex line-explanation p-2 pl-24">
+                  <div class="line-number mr-4">9</div>
+                  <div class="flex-1">
+                    <code
+                      ><span class="yaml-key">app</span>:
+                      <span class="yaml-string">frontend</span></code
+                    >
+                  </div>
+                </div>
+
+                <!-- Line 10 -->
+                <div class="flex line-explanation p-2 pl-8">
+                  <div class="line-number mr-4">10</div>
+                  <div class="flex-1">
+                    <code><span class="yaml-key">template</span>:</code>
+                  </div>
+                </div>
+
+                <!-- Line 11 -->
+                <div class="flex line-explanation p-2 pl-16">
+                  <div class="line-number mr-4">11</div>
+                  <div class="flex-1">
+                    <code><span class="yaml-key">metadata</span>:</code>
+                  </div>
+                </div>
+
+                <!-- Line 12 -->
+                <div class="flex line-explanation p-2 pl-24">
+                  <div class="line-number mr-4">12</div>
+                  <div class="flex-1">
+                    <code><span class="yaml-key">labels</span>:</code>
+                  </div>
+                </div>
+
+                <!-- Line 13 -->
+                <div class="flex line-explanation p-2 pl-32">
+                  <div class="line-number mr-4">13</div>
+                  <div class="flex-1">
+                    <code
+                      ><span class="yaml-key">app</span>:
+                      <span class="yaml-string">frontend</span></code
+                    >
+                  </div>
+                </div>
+
+                <!-- Line 14 -->
+                <div class="flex line-explanation p-2 pl-16">
+                  <div class="line-number mr-4">14</div>
+                  <div class="flex-1">
+                    <code><span class="yaml-key">spec</span>:</code>
+                  </div>
+                </div>
+
+                <!-- Line 15 -->
+                <div class="flex line-explanation p-2 pl-24">
+                  <div class="line-number mr-4">15</div>
+                  <div class="flex-1">
+                    <code><span class="yaml-key">containers</span>:</code>
+                  </div>
+                </div>
+
+                <!-- Line 16 -->
+                <div class="flex line-explanation p-2 pl-32">
+                  <div class="line-number mr-4">16</div>
+                  <div class="flex-1">
+                    <code
+                      >- <span class="yaml-key">name</span>:
+                      <span class="yaml-string">frontend</span></code
+                    >
+                  </div>
+                </div>
+
+                <!-- Line 17 -->
+                <div class="flex line-explanation p-2 pl-32">
+                  <div class="line-number mr-4">17</div>
+                  <div class="flex-1">
+                    <code
+                      ><span class="yaml-key">image</span>:
+                      <span class="yaml-string"
+                        >amiitdev/shopify-frontend:latest</span
+                      ></code
+                    >
+                  </div>
+                </div>
+
+                <!-- Line 18 -->
+                <div class="flex line-explanation p-2 pl-32">
+                  <div class="line-number mr-4">18</div>
+                  <div class="flex-1">
+                    <code><span class="yaml-key">ports</span>:</code>
+                  </div>
+                </div>
+
+                <!-- Line 19 -->
+                <div class="flex line-explanation p-2 pl-40">
+                  <div class="line-number mr-4">19</div>
+                  <div class="flex-1">
+                    <code
+                      >- <span class="yaml-key">containerPort</span>:
+                      <span class="yaml-value">80</span></code
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Line-by-Line Explanation -->
+          <div class="mb-6">
+            <h4 class="font-bold text-lg mb-4 gradient-text-green">
+              <i class="fas fa-microscope mr-2"></i>Line-by-Line Deep Dive
+            </h4>
+
+            <div class="space-y-4">
+              <!-- Line 1-2 -->
+              <div class="note-info p-4 rounded-lg">
+                <div class="flex items-start">
+                  <div
+                    class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center mr-3 mt-1"
+                  >
+                    <span class="text-white font-bold">1-2</span>
+                  </div>
+                  <div>
+                    <h5 class="font-bold mb-1">
+                      <code>apiVersion: apps/v1 kind: Deployment</code>
+                    </h5>
+                    <p class="text-gray-300">
+                      Standard Deployment definition like backend.
+                    </p>
+                    <p class="text-sm text-gray-400 mt-1">
+                      🤔 <strong>Why Deployment?</strong> Same reasons as
+                      backend:
+                    </p>
+                    <ul
+                      class="list-disc pl-5 text-sm text-gray-400 mt-1 space-y-1"
+                    >
+                      <li>Pod management</li>
+                      <li>Auto restart if crashes</li>
+                      <li>Scaling capability</li>
+                      <li>Rolling updates</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Line 4 -->
+              <div class="note-info p-4 rounded-lg">
+                <div class="flex items-start">
+                  <div
+                    class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center mr-3 mt-1"
+                  >
+                    <span class="text-white font-bold">4</span>
+                  </div>
+                  <div>
+                    <h5 class="font-bold mb-1">
+                      <code>name: frontend-deployment</code>
+                    </h5>
+                    <p class="text-gray-300">
+                      Name of this frontend Deployment.
+                    </p>
+                    <p class="text-sm text-gray-400 mt-1">
+                      🤔 <strong>Used for management:</strong>
+                    </p>
+                    <div class="code-block rounded p-2 mt-2">
+                      <code class="text-xs"
+                        >kubectl rollout restart deployment
+                        frontend-deployment<br />kubectl scale deployment
+                        frontend-deployment --replicas=2</code
+                      >
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Line 6 -->
+              <div class="note-info p-4 rounded-lg">
+                <div class="flex items-start">
+                  <div
+                    class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center mr-3 mt-1"
+                  >
+                    <span class="text-white font-bold">6</span>
+                  </div>
+                  <div>
+                    <h5 class="font-bold mb-1"><code>replicas: 1</code></h5>
+                    <p class="text-gray-300">Only 1 frontend pod will run.</p>
+                    <p class="text-sm text-gray-400 mt-1">
+                      🤔 <strong>Why only 1 replica?</strong>
+                    </p>
+                    <ul
+                      class="list-disc pl-5 text-sm text-gray-400 mt-1 space-y-1"
+                    >
+                      <li>Frontend is static files (React build)</li>
+                      <li>No state to synchronize</li>
+                      <li>Small app - 1 is enough for learning</li>
+                      <li>In production: increase to 2-3 for HA</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Lines 8-9 -->
+              <div class="note-warning p-4 rounded-lg">
+                <div class="flex items-start">
+                  <div
+                    class="w-8 h-8 rounded-full bg-pink-500 flex items-center justify-center mr-3 mt-1"
+                  >
+                    <span class="text-white font-bold">8-9</span>
+                  </div>
+                  <div>
+                    <h5 class="font-bold mb-1">
+                      <code>selector: matchLabels: app: frontend</code>
+                    </h5>
+                    <p class="text-gray-300">
+                      Deployment selects Pods with label
+                      <span class="font-mono bg-gray-800 px-2 py-1 rounded"
+                        >app: frontend</span
+                      >.
+                    </p>
+                    <p class="text-sm text-gray-400 mt-1">
+                      🤔 <strong>Same critical concept:</strong> Must match Pod
+                      template labels!
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Lines 12-13 -->
+              <div class="note-info p-4 rounded-lg">
+                <div class="flex items-start">
+                  <div
+                    class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center mr-3 mt-1"
+                  >
+                    <span class="text-white font-bold">12-13</span>
+                  </div>
+                  <div>
+                    <h5 class="font-bold mb-1">
+                      <code>labels: app: frontend</code>
+                    </h5>
+                    <p class="text-gray-300">
+                      Every Pod created gets this label.
+                    </p>
+                    <p class="text-sm text-gray-400 mt-1">
+                      🤔 <strong>Why labels?</strong>
+                    </p>
+                    <div class="grid grid-cols-2 gap-2 mt-2">
+                      <div class="p-2 rounded bg-gray-800">
+                        <p class="text-xs">Deployment management</p>
+                      </div>
+                      <div class="p-2 rounded bg-gray-800">
+                        <p class="text-xs">Service connection</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Line 16 -->
+              <div class="note-info p-4 rounded-lg">
+                <div class="flex items-start">
+                  <div
+                    class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center mr-3 mt-1"
+                  >
+                    <span class="text-white font-bold">16</span>
+                  </div>
+                  <div>
+                    <h5 class="font-bold mb-1"><code>name: frontend</code></h5>
+                    <p class="text-gray-300">Container name inside Pod.</p>
+                    <p class="text-sm text-gray-400 mt-1">
+                      🤔 <strong>For debugging:</strong>
+                    </p>
+                    <div class="code-block rounded p-2 mt-2">
+                      <code class="text-xs"
+                        >kubectl logs &lt;pod-name&gt; -c frontend</code
+                      >
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Line 17 -->
+              <div class="note-important p-4 rounded-lg">
+                <div class="flex items-start">
+                  <div
+                    class="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center mr-3 mt-1"
+                  >
+                    <span class="text-white font-bold">17</span>
+                  </div>
+                  <div>
+                    <h5 class="font-bold mb-1">
+                      <code>image: amiitdev/shopify-frontend:latest</code>
+                    </h5>
+                    <p class="text-gray-300">Docker image for frontend.</p>
+                    <p class="text-sm text-gray-400 mt-1">
+                      🤔 <strong>What's in this image?</strong>
+                    </p>
+                    <ul
+                      class="list-disc pl-5 text-sm text-gray-400 mt-1 space-y-1"
+                    >
+                      <li>
+                        React build files (from <code>npm run build</code>)
+                      </li>
+                      <li>Nginx web server</li>
+                      <li>Custom nginx.conf</li>
+                      <li>Static file serving configuration</li>
+                    </ul>
+                    <p class="text-sm text-gray-400 mt-2">
+                      Nginx inside container:
+                    </p>
+                    <div class="code-block rounded p-2 mt-1">
+                      <code class="text-xs"
+                        ># Proxies /api to backend service<br />location /api
+                        {<br />&nbsp;&nbsp;proxy_pass http://backend:3000;<br />}</code
+                      >
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Lines 18-19 -->
+              <div class="note-info p-4 rounded-lg">
+                <div class="flex items-start">
+                  <div
+                    class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center mr-3 mt-1"
+                  >
+                    <span class="text-white font-bold">18-19</span>
+                  </div>
+                  <div>
+                    <h5 class="font-bold mb-1">
+                      <code>ports: containerPort: 80</code>
+                    </h5>
+                    <p class="text-gray-300">
+                      Nginx listens on port 80 inside container.
+                    </p>
+                    <p class="text-sm text-gray-400 mt-1">
+                      🤔 <strong>Why port 80?</strong>
+                    </p>
+                    <ul
+                      class="list-disc pl-5 text-sm text-gray-400 mt-1 space-y-1"
+                    >
+                      <li>Standard HTTP port</li>
+                      <li>Nginx default port</li>
+                      <li>Service will forward traffic here</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Big Picture Summary -->
+          <div class="p-6 rounded-xl" style="background: rgba(17, 17, 31, 0.9)">
+            <h4 class="font-bold text-lg mb-4 gradient-text-green text-center">
+              <i class="fas fa-eye mr-2"></i>Big Picture: Frontend Architecture
+            </h4>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <p class="font-bold mb-2 gradient-text-green">
+                  ✅ What This Deployment Creates:
+                </p>
+                <ul class="space-y-2 text-sm text-gray-300">
+                  <li class="flex items-start">
+                    <i
+                      class="fas fa-check-circle text-neon-green mt-1 mr-2"
+                    ></i>
+                    <span>1 frontend pod running nginx</span>
+                  </li>
+                  <li class="flex items-start">
+                    <i
+                      class="fas fa-check-circle text-neon-green mt-1 mr-2"
+                    ></i>
+                    <span>Serves React static files</span>
+                  </li>
+                  <li class="flex items-start">
+                    <i
+                      class="fas fa-check-circle text-neon-green mt-1 mr-2"
+                    ></i>
+                    <span>Proxies /api requests to backend</span>
+                  </li>
+                  <li class="flex items-start">
+                    <i
+                      class="fas fa-check-circle text-neon-green mt-1 mr-2"
+                    ></i>
+                    <span>Auto-restart if crashes</span>
+                  </li>
+                </ul>
+
+                <p class="font-bold mt-4 mb-2 gradient-text-pink">
+                  🚀 For Production Add:
+                </p>
+                <div class="code-block rounded p-2 mt-1">
+                  <code class="text-xs"
+                    >resources:<br />&nbsp;&nbsp;requests:<br />&nbsp;&nbsp;&nbsp;&nbsp;memory:
+                    "64Mi"<br />&nbsp;&nbsp;&nbsp;&nbsp;cpu: "50m"<br />&nbsp;&nbsp;limits:<br />&nbsp;&nbsp;&nbsp;&nbsp;memory:
+                    "128Mi"<br />&nbsp;&nbsp;&nbsp;&nbsp;cpu: "200m"<br /><br />readinessProbe:<br />&nbsp;&nbsp;httpGet:<br />&nbsp;&nbsp;&nbsp;&nbsp;path:
+                    /<br />&nbsp;&nbsp;&nbsp;&nbsp;port: 80</code
+                  >
+                </div>
+              </div>
+
+              <div>
+                <p class="font-bold mb-2 gradient-text-blue">
+                  🌐 Network Flow:
+                </p>
+                <div class="text-center mb-4">
+                  <div
+                    class="inline-block p-3 rounded-xl"
+                    style="background: rgba(0, 255, 157, 0.1)"
+                  >
+                    <p class="text-sm font-bold">Browser Request</p>
+                    <p class="text-xs">GET /api/products</p>
+                  </div>
+                  <div class="my-2">
+                    <i class="fas fa-arrow-down text-neon-purple"></i>
+                  </div>
+                  <div
+                    class="inline-block p-3 rounded-xl"
+                    style="background: rgba(0, 217, 255, 0.1)"
+                  >
+                    <p class="text-sm font-bold">Nginx in Container</p>
+                    <p class="text-xs">Proxy to backend:3000</p>
+                  </div>
+                  <div class="my-2">
+                    <i class="fas fa-arrow-down text-neon-purple"></i>
+                  </div>
+                  <div
+                    class="inline-block p-3 rounded-xl"
+                    style="background: rgba(185, 103, 255, 0.1)"
+                  >
+                    <p class="text-sm font-bold">Backend Service</p>
+                    <p class="text-xs">Load balance to pods</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 4: Frontend Service -->
+      <section class="mb-12 md:mb-16">
+        <div class="flex items-center mb-6">
+          <div
+            class="bg-gradient-to-r from-yellow-500 to-orange-400 p-3 rounded-xl mr-4"
+          >
+            <i class="fas fa-server text-white text-2xl"></i>
+          </div>
+          <div>
+            <h2 class="text-2xl md:text-3xl font-bold gradient-text-yellow">
+              Frontend Service
+            </h2>
+            <p class="text-gray-400">Connects Ingress to frontend pods</p>
+          </div>
+        </div>
+
+        <div class="card-bg rounded-2xl p-6 neon-border mb-6">
+          <div class="flex items-center mb-4">
+            <i class="fas fa-network-wired text-neon-yellow text-xl mr-3"></i>
+            <h3
+              class="text-xl font-bold"
+              style="
+                background: linear-gradient(90deg, #ffcc00, #ff9900);
+                -webkit-background-clip: text;
+                background-clip: text;
+                color: transparent;
+              "
+            >
+              Service YAML File
+            </h3>
+            <span class="ml-auto text-sm text-gray-400"
+              >k8s/frontend-service.yaml</span
+            >
+          </div>
+
+          <!-- The YAML Code Block -->
+          <div class="code-block rounded-lg p-4 mb-6">
+            <div class="flex items-center mb-4">
+              <div class="h-3 w-3 rounded-full bg-red-500 mr-2"></div>
+              <div class="h-3 w-3 rounded-full bg-yellow-500 mr-2"></div>
+              <div class="h-3 w-3 rounded-full bg-green-500 mr-2"></div>
+              <span class="text-sm text-gray-400 ml-2"
+                >frontend-service.yaml</span
+              >
+            </div>
+
+            <div class="overflow-x-auto">
+              <div class="min-w-max">
+                <!-- Line 1 -->
+                <div class="flex line-explanation p-2">
+                  <div class="line-number mr-4">1</div>
+                  <div class="flex-1">
+                    <code
+                      ><span class="yaml-key">apiVersion</span>:
+                      <span class="yaml-value">v1</span></code
+                    >
+                  </div>
+                </div>
+
+                <!-- Line 2 -->
+                <div class="flex line-explanation p-2">
+                  <div class="line-number mr-4">2</div>
+                  <div class="flex-1">
+                    <code
+                      ><span class="yaml-key">kind</span>:
+                      <span class="yaml-string">Service</span></code
+                    >
+                  </div>
+                </div>
+
+                <!-- Line 3 -->
+                <div class="flex line-explanation p-2">
+                  <div class="line-number mr-4">3</div>
+                  <div class="flex-1">
+                    <code><span class="yaml-key">metadata</span>:</code>
+                  </div>
+                </div>
+
+                <!-- Line 4 -->
+                <div class="flex line-explanation p-2 pl-8">
+                  <div class="line-number mr-4">4</div>
+                  <div class="flex-1">
+                    <code
+                      ><span class="yaml-key">name</span>:
+                      <span class="yaml-string">frontend-service</span></code
+                    >
+                  </div>
+                </div>
+
+                <!-- Line 5 -->
+                <div class="flex line-explanation p-2">
+                  <div class="line-number mr-4">5</div>
+                  <div class="flex-1">
+                    <code><span class="yaml-key">spec</span>:</code>
+                  </div>
+                </div>
+
+                <!-- Line 6 -->
+                <div class="flex line-explanation p-2 pl-8">
+                  <div class="line-number mr-4">6</div>
+                  <div class="flex-1">
+                    <code><span class="yaml-key">selector</span>:</code>
+                  </div>
+                </div>
+
+                <!-- Line 7 -->
+                <div class="flex line-explanation p-2 pl-16">
+                  <div class="line-number mr-4">7</div>
+                  <div class="flex-1">
+                    <code
+                      ><span class="yaml-key">app</span>:
+                      <span class="yaml-string">frontend</span></code
+                    >
+                  </div>
+                </div>
+
+                <!-- Line 8 -->
+                <div class="flex line-explanation p-2 pl-8">
+                  <div class="line-number mr-4">8</div>
+                  <div class="flex-1">
+                    <code><span class="yaml-key">ports</span>:</code>
+                  </div>
+                </div>
+
+                <!-- Line 9 -->
+                <div class="flex line-explanation p-2 pl-16">
+                  <div class="line-number mr-4">9</div>
+                  <div class="flex-1">
+                    <code
+                      >- <span class="yaml-key">port</span>:
+                      <span class="yaml-value">80</span></code
+                    >
+                  </div>
+                </div>
+
+                <!-- Line 10 -->
+                <div class="flex line-explanation p-2 pl-24">
+                  <div class="line-number mr-4">10</div>
+                  <div class="flex-1">
+                    <code
+                      ><span class="yaml-key">targetPort</span>:
+                      <span class="yaml-value">80</span></code
+                    >
+                  </div>
+                </div>
+
+                <!-- Line 11 -->
+                <div class="flex line-explanation p-2 pl-8">
+                  <div class="line-number mr-4">11</div>
+                  <div class="flex-1">
+                    <code
+                      ><span class="yaml-key">type</span>:
+                      <span class="yaml-string">ClusterIP</span></code
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Line-by-Line Explanation -->
+          <div class="mb-6">
+            <h4 class="font-bold text-lg mb-4 gradient-text-green">
+              <i class="fas fa-microscope mr-2"></i>Line-by-Line Deep Dive
+            </h4>
+
+            <div class="space-y-4">
+              <!-- Line 4 -->
+              <div class="note-info p-4 rounded-lg">
+                <div class="flex items-start">
+                  <div
+                    class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center mr-3 mt-1"
+                  >
+                    <span class="text-white font-bold">4</span>
+                  </div>
+                  <div>
+                    <h5 class="font-bold mb-1">
+                      <code>name: frontend-service</code>
+                    </h5>
+                    <p class="text-gray-300">
+                      Name of this Service - referenced by Ingress.
+                    </p>
+                    <p class="text-sm text-gray-400 mt-1">
+                      🤔 <strong>This is the key connection point:</strong>
+                    </p>
+                    <div class="code-block rounded p-2 mt-2">
+                      <code class="text-xs"
+                        ># Ingress references this<br />backend:<br />&nbsp;&nbsp;service:<br />&nbsp;&nbsp;&nbsp;&nbsp;name:
+                        frontend-service</code
+                      >
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Lines 6-7 -->
+              <div class="note-warning p-4 rounded-lg">
+                <div class="flex items-start">
+                  <div
+                    class="w-8 h-8 rounded-full bg-pink-500 flex items-center justify-center mr-3 mt-1"
+                  >
+                    <span class="text-white font-bold">6-7</span>
+                  </div>
+                  <div>
+                    <h5 class="font-bold mb-1">
+                      <code>selector: app: frontend</code>
+                    </h5>
+                    <p class="text-gray-300">
+                      Service selects Pods with label
+                      <span class="font-mono bg-gray-800 px-2 py-1 rounded"
+                        >app: frontend</span
+                      >.
+                    </p>
+                    <p class="text-sm text-gray-400 mt-1">
+                      🤔 <strong>Must match frontend Deployment labels:</strong>
+                    </p>
+                    <div class="code-block rounded p-2 mt-2">
+                      <code class="text-xs"
+                        ># In frontend-deployment.yaml<br />labels:<br />&nbsp;&nbsp;app:
+                        frontend</code
+                      >
+                    </div>
+                    <p class="text-sm text-red-400 mt-2">
+                      ⚠️ If mismatch: Ingress works but routes to nothing!
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Lines 9-10 -->
+              <div class="note-info p-4 rounded-lg">
+                <div class="flex items-start">
+                  <div
+                    class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center mr-3 mt-1"
+                  >
+                    <span class="text-white font-bold">9-10</span>
+                  </div>
+                  <div>
+                    <h5 class="font-bold mb-1">
+                      <code>port: 80 targetPort: 80</code>
+                    </h5>
+                    <p class="text-gray-300">
+                      Both Service and container use port 80.
+                    </p>
+                    <p class="text-sm text-gray-400 mt-1">
+                      🤔 <strong>Simple mapping:</strong>
+                    </p>
+                    <div class="flex items-center justify-center mt-2">
+                      <div class="text-center p-2">
+                        <div
+                          class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center mx-auto"
+                        >
+                          <span class="text-white text-xs">80</span>
+                        </div>
+                        <p class="text-xs mt-1">Service Port</p>
+                      </div>
+                      <div class="mx-4">
+                        <i class="fas fa-arrow-right text-neon-purple"></i>
+                      </div>
+                      <div class="text-center p-2">
+                        <div
+                          class="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center mx-auto"
+                        >
+                          <span class="text-white text-xs">80</span>
+                        </div>
+                        <p class="text-xs mt-1">Container Port</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Line 11 -->
+              <div class="note-tip p-4 rounded-lg">
+                <div class="flex items-start">
+                  <div
+                    class="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center mr-3 mt-1"
+                  >
+                    <span class="text-white font-bold">11</span>
+                  </div>
+                  <div>
+                    <h5 class="font-bold mb-1"><code>type: ClusterIP</code></h5>
+                    <p class="text-gray-300">Internal-only Service.</p>
+                    <p class="text-sm text-gray-400 mt-1">
+                      🤔
+                      <strong
+                        >Why ClusterIP when we need external access?</strong
+                      >
+                    </p>
+                    <ul
+                      class="list-disc pl-5 text-sm text-gray-400 mt-1 space-y-1"
+                    >
+                      <li>Ingress handles external traffic</li>
+                      <li>Service only needs internal accessibility</li>
+                      <li>Clean separation of concerns</li>
+                      <li>Production pattern</li>
+                    </ul>
+                    <p class="text-sm text-gray-400 mt-3">Architecture:</p>
+                    <div class="text-center mt-2">
+                      <div class="inline-block p-2 rounded bg-gray-800">
+                        <p class="text-xs">Browser</p>
+                      </div>
+                      <div class="mx-2 inline-block">
+                        <i class="fas fa-arrow-right text-neon-purple"></i>
+                      </div>
+                      <div class="inline-block p-2 rounded bg-gray-800">
+                        <p class="text-xs">Ingress</p>
+                      </div>
+                      <div class="mx-2 inline-block">
+                        <i class="fas fa-arrow-right text-neon-purple"></i>
+                      </div>
+                      <div class="inline-block p-2 rounded bg-gray-800">
+                        <p class="text-xs">frontend-service</p>
+                      </div>
+                      <div class="mx-2 inline-block">
+                        <i class="fas fa-arrow-right text-neon-purple"></i>
+                      </div>
+                      <div class="inline-block p-2 rounded bg-gray-800">
+                        <p class="text-xs">frontend pod</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 5: Ingress -->
+      <section class="mb-12 md:mb-16">
+        <div class="flex items-center mb-6">
+          <div
+            class="bg-gradient-to-r from-red-500 to-pink-400 p-3 rounded-xl mr-4"
+          >
+            <i class="fas fa-globe text-white text-2xl"></i>
+          </div>
+          <div>
+            <h2 class="text-2xl md:text-3xl font-bold gradient-text-pink">
+              Ingress Router
+            </h2>
+            <p class="text-gray-400">Domain-based routing entry point</p>
+          </div>
+        </div>
+
+        <div class="card-bg rounded-2xl p-6 neon-border mb-6">
+          <div class="flex items-center mb-4">
+            <i class="fas fa-road text-neon-pink text-xl mr-3"></i>
+            <h3 class="text-xl font-bold gradient-text-pink">
+              Ingress YAML File
+            </h3>
+            <span class="ml-auto text-sm text-gray-400">k8s/ingress.yaml</span>
+          </div>
+
+          <!-- The YAML Code Block -->
+          <div class="code-block rounded-lg p-4 mb-6">
+            <div class="flex items-center mb-4">
+              <div class="h-3 w-3 rounded-full bg-red-500 mr-2"></div>
+              <div class="h-3 w-3 rounded-full bg-yellow-500 mr-2"></div>
+              <div class="h-3 w-3 rounded-full bg-green-500 mr-2"></div>
+              <span class="text-sm text-gray-400 ml-2">ingress.yaml</span>
+            </div>
+
+            <div class="overflow-x-auto">
+              <div class="min-w-max">
+                <!-- Line 1 -->
+                <div class="flex line-explanation p-2">
+                  <div class="line-number mr-4">1</div>
+                  <div class="flex-1">
+                    <code
+                      ><span class="yaml-key">apiVersion</span>:
+                      <span class="yaml-value">networking.k8s.io/v1</span></code
+                    >
+                  </div>
+                </div>
+
+                <!-- Line 2 -->
+                <div class="flex line-explanation p-2">
+                  <div class="line-number mr-4">2</div>
+                  <div class="flex-1">
+                    <code
+                      ><span class="yaml-key">kind</span>:
+                      <span class="yaml-string">Ingress</span></code
+                    >
+                  </div>
+                </div>
+
+                <!-- Line 3 -->
+                <div class="flex line-explanation p-2">
+                  <div class="line-number mr-4">3</div>
+                  <div class="flex-1">
+                    <code><span class="yaml-key">metadata</span>:</code>
+                  </div>
+                </div>
+
+                <!-- Line 4 -->
+                <div class="flex line-explanation p-2 pl-8">
+                  <div class="line-number mr-4">4</div>
+                  <div class="flex-1">
+                    <code
+                      ><span class="yaml-key">name</span>:
+                      <span class="yaml-string">shopify-ingress</span></code
+                    >
+                  </div>
+                </div>
+
+                <!-- Line 5 -->
+                <div class="flex line-explanation p-2">
+                  <div class="line-number mr-4">5</div>
+                  <div class="flex-1">
+                    <code><span class="yaml-key">spec</span>:</code>
+                  </div>
+                </div>
+
+                <!-- Line 6 -->
+                <div class="flex line-explanation p-2 pl-8">
+                  <div class="line-number mr-4">6</div>
+                  <div class="flex-1">
+                    <code><span class="yaml-key">rules</span>:</code>
+                  </div>
+                </div>
+
+                <!-- Line 7 -->
+                <div class="flex line-explanation p-2 pl-16">
+                  <div class="line-number mr-4">7</div>
+                  <div class="flex-1">
+                    <code
+                      >- <span class="yaml-key">host</span>:
+                      <span class="yaml-string">shopify.local</span></code
+                    >
+                  </div>
+                </div>
+
+                <!-- Line 8 -->
+                <div class="flex line-explanation p-2 pl-16">
+                  <div class="line-number mr-4">8</div>
+                  <div class="flex-1">
+                    <code><span class="yaml-key">http</span>:</code>
+                  </div>
+                </div>
+
+                <!-- Line 9 -->
+                <div class="flex line-explanation p-2 pl-24">
+                  <div class="line-number mr-4">9</div>
+                  <div class="flex-1">
+                    <code><span class="yaml-key">paths</span>:</code>
+                  </div>
+                </div>
+
+                <!-- Line 10 -->
+                <div class="flex line-explanation p-2 pl-32">
+                  <div class="line-number mr-4">10</div>
+                  <div class="flex-1">
+                    <code
+                      >- <span class="yaml-key">path</span>:
+                      <span class="yaml-string">/</span></code
+                    >
+                  </div>
+                </div>
+
+                <!-- Line 11 -->
+                <div class="flex line-explanation p-2 pl-40">
+                  <div class="line-number mr-4">11</div>
+                  <div class="flex-1">
+                    <code
+                      ><span class="yaml-key">pathType</span>:
+                      <span class="yaml-string">Prefix</span></code
+                    >
+                  </div>
+                </div>
+
+                <!-- Line 12 -->
+                <div class="flex line-explanation p-2 pl-40">
+                  <div class="line-number mr-4">12</div>
+                  <div class="flex-1">
+                    <code><span class="yaml-key">backend</span>:</code>
+                  </div>
+                </div>
+
+                <!-- Line 13 -->
+                <div class="flex line-explanation p-2 pl-48">
+                  <div class="line-number mr-4">13</div>
+                  <div class="flex-1">
+                    <code><span class="yaml-key">service</span>:</code>
+                  </div>
+                </div>
+
+                <!-- Line 14 -->
+                <div class="flex line-explanation p-2 pl-56">
+                  <div class="line-number mr-4">14</div>
+                  <div class="flex-1">
+                    <code
+                      ><span class="yaml-key">name</span>:
+                      <span class="yaml-string">frontend-service</span></code
+                    >
+                  </div>
+                </div>
+
+                <!-- Line 15 -->
+                <div class="flex line-explanation p-2 pl-56">
+                  <div class="line-number mr-4">15</div>
+                  <div class="flex-1">
+                    <code><span class="yaml-key">port</span>:</code>
+                  </div>
+                </div>
+
+                <!-- Line 16 -->
+                <div class="flex line-explanation p-2 pl-64">
+                  <div class="line-number mr-4">16</div>
+                  <div class="flex-1">
+                    <code
+                      ><span class="yaml-key">number</span>:
+                      <span class="yaml-value">80</span></code
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Line-by-Line Explanation -->
+          <div class="mb-6">
+            <h4 class="font-bold text-lg mb-4 gradient-text-green">
+              <i class="fas fa-microscope mr-2"></i>Line-by-Line Deep Dive
+            </h4>
+
+            <div class="space-y-4">
+              <!-- Line 1 -->
+              <div class="note-info p-4 rounded-lg">
+                <div class="flex items-start">
+                  <div
+                    class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center mr-3 mt-1"
+                  >
+                    <span class="text-white font-bold">1</span>
+                  </div>
+                  <div>
+                    <h5 class="font-bold mb-1">
+                      <code>apiVersion: networking.k8s.io/v1</code>
+                    </h5>
+                    <p class="text-gray-300">
+                      We're using the
+                      <span class="font-bold">networking API group</span>.
+                    </p>
+                    <p class="text-sm text-gray-400 mt-1">
+                      🤔 <strong>Why different API group?</strong>
+                    </p>
+                    <ul
+                      class="list-disc pl-5 text-sm text-gray-400 mt-1 space-y-1"
+                    >
+                      <li>Deployments → apps/v1</li>
+                      <li>Services → v1 (core)</li>
+                      <li>Ingress → networking.k8s.io/v1</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Line 2 -->
+              <div class="note-info p-4 rounded-lg">
+                <div class="flex items-start">
+                  <div
+                    class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center mr-3 mt-1"
+                  >
+                    <span class="text-white font-bold">2</span>
+                  </div>
+                  <div>
+                    <h5 class="font-bold mb-1"><code>kind: Ingress</code></h5>
+                    <p class="text-gray-300">
+                      We are creating an
+                      <span class="font-bold gradient-text-pink">Ingress</span>
+                      object.
+                    </p>
+                    <p class="text-sm text-gray-400 mt-1">
+                      🤔 <strong>What is Ingress?</strong>
+                    </p>
+                    <ul
+                      class="list-disc pl-5 text-sm text-gray-400 mt-1 space-y-1"
+                    >
+                      <li>Traffic router inside Kubernetes</li>
+                      <li>HTTP/HTTPS reverse proxy</li>
+                      <li>Domain-based routing</li>
+                      <li>Path-based routing</li>
+                      <li>Central entry point</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Lines 3-4 -->
+              <div class="note-info p-4 rounded-lg">
+                <div class="flex items-start">
+                  <div
+                    class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center mr-3 mt-1"
+                  >
+                    <span class="text-white font-bold">3-4</span>
+                  </div>
+                  <div>
+                    <h5 class="font-bold mb-1">
+                      <code>metadata: name: shopify-ingress</code>
+                    </h5>
+                    <p class="text-gray-300">Name of the Ingress object.</p>
+                    <p class="text-sm text-gray-400 mt-1">
+                      🤔 <strong>For management:</strong>
+                    </p>
+                    <div class="code-block rounded p-2 mt-2">
+                      <code class="text-xs"
+                        >kubectl get ingress<br />kubectl describe ingress
+                        shopify-ingress</code
+                      >
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Line 7 -->
+              <div class="note-important p-4 rounded-lg">
+                <div class="flex items-start">
+                  <div
+                    class="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center mr-3 mt-1"
+                  >
+                    <span class="text-white font-bold">7</span>
+                  </div>
+                  <div>
+                    <h5 class="font-bold mb-1">
+                      <code>host: shopify.local</code>
+                    </h5>
+                    <p class="text-gray-300">
+                      This rule applies only when user visits
+                      <span class="font-bold">shopify.local</span>.
+                    </p>
+                    <p class="text-sm text-gray-400 mt-1">
+                      🤔 <strong>Domain-based routing:</strong>
+                    </p>
+                    <div class="code-block rounded p-2 mt-2">
+                      <code class="text-xs"
+                        >shopify.local → frontend<br />api.shopify.local →
+                        backend (could add)<br />admin.shopify.local → admin
+                        (could add)</code
+                      >
+                    </div>
+                    <p class="text-sm text-gray-400 mt-2">
+                      You need to add to <code>/etc/hosts</code>:
+                    </p>
+                    <div class="code-block rounded p-2 mt-1">
+                      <code class="text-xs">127.0.0.1 shopify.local</code>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Lines 10-11 -->
+              <div class="note-info p-4 rounded-lg">
+                <div class="flex items-start">
+                  <div
+                    class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center mr-3 mt-1"
+                  >
+                    <span class="text-white font-bold">10-11</span>
+                  </div>
+                  <div>
+                    <h5 class="font-bold mb-1">
+                      <code>path: / pathType: Prefix</code>
+                    </h5>
+                    <p class="text-gray-300">
+                      Match everything starting with <code>/</code>.
+                    </p>
+                    <p class="text-sm text-gray-400 mt-1">
+                      🤔 <strong>Prefix pathType means:</strong>
+                    </p>
+                    <ul
+                      class="list-disc pl-5 text-sm text-gray-400 mt-1 space-y-1"
+                    >
+                      <li><code>/</code> → matches</li>
+                      <li><code>/api</code> → matches</li>
+                      <li><code>/shop</code> → matches</li>
+                      <li><code>/admin</code> → matches</li>
+                    </ul>
+                    <p class="text-sm text-gray-400 mt-2">
+                      All traffic goes to frontend, then nginx proxies
+                      <code>/api</code> to backend.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Lines 14-16 -->
+              <div class="note-warning p-4 rounded-lg">
+                <div class="flex items-start">
+                  <div
+                    class="w-8 h-8 rounded-full bg-pink-500 flex items-center justify-center mr-3 mt-1"
+                  >
+                    <span class="text-white font-bold">14-16</span>
+                  </div>
+                  <div>
+                    <h5 class="font-bold mb-1">
+                      <code>service: name: frontend-service port: 80</code>
+                    </h5>
+                    <p class="text-gray-300">
+                      Send traffic to
+                      <span class="font-bold">frontend-service</span> on port
+                      80.
+                    </p>
+                    <p class="text-sm text-gray-400 mt-1">
+                      🤔 <strong>CRITICAL:</strong> Ingress talks to Services,
+                      NOT directly to Pods!
+                    </p>
+                    <p class="text-sm text-gray-400 mt-2">Flow:</p>
+                    <div class="text-center mt-2">
+                      <div class="inline-block p-1 rounded bg-gray-800">
+                        <p class="text-xs">Ingress</p>
+                      </div>
+                      <div class="mx-1 inline-block">
+                        <i
+                          class="fas fa-arrow-right text-xs text-neon-purple"
+                        ></i>
+                      </div>
+                      <div class="inline-block p-1 rounded bg-gray-800">
+                        <p class="text-xs">Service</p>
+                      </div>
+                      <div class="mx-1 inline-block">
+                        <i
+                          class="fas fa-arrow-right text-xs text-neon-purple"
+                        ></i>
+                      </div>
+                      <div class="inline-block p-1 rounded bg-gray-800">
+                        <p class="text-xs">Pods</p>
+                      </div>
+                    </div>
+                    <p class="text-sm text-red-400 mt-2">
+                      ⚠️ If service doesn't exist or selector mismatch → 503
+                      error!
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Big Picture Summary -->
+          <div class="p-6 rounded-xl" style="background: rgba(17, 17, 31, 0.9)">
+            <h4 class="font-bold text-lg mb-4 gradient-text-pink text-center">
+              <i class="fas fa-eye mr-2"></i>Big Picture: Complete Traffic Flow
+            </h4>
+
+            <div class="space-y-4">
+              <div class="text-center">
+                <p class="font-bold mb-2 gradient-text-blue">
+                  🌐 Full Request Journey:
+                </p>
+              </div>
+
+              <!-- Step 1 -->
+              <div class="flex items-start">
+                <div
+                  class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center mr-3 mt-1"
+                >
+                  <span class="text-white font-bold">1</span>
+                </div>
+                <div class="flex-1">
+                  <div
+                    class="p-3 rounded-xl"
+                    style="background: rgba(0, 217, 255, 0.1)"
+                  >
+                    <p class="font-bold text-sm">Browser Request</p>
+                    <p class="text-xs text-gray-400">
+                      User opens: <code>http://shopify.local</code>
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Step 2 -->
+              <div class="flex items-start">
+                <div
+                  class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center mr-3 mt-1"
+                >
+                  <span class="text-white font-bold">2</span>
+                </div>
+                <div class="flex-1">
+                  <div
+                    class="p-3 rounded-xl"
+                    style="background: rgba(185, 103, 255, 0.1)"
+                  >
+                    <p class="font-bold text-sm">DNS Resolution</p>
+                    <p class="text-xs text-gray-400">
+                      <code>/etc/hosts</code> → Minikube IP (127.0.0.1)
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Step 3 -->
+              <div class="flex items-start">
+                <div
+                  class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center mr-3 mt-1"
+                >
+                  <span class="text-white font-bold">3</span>
+                </div>
+                <div class="flex-1">
+                  <div
+                    class="p-3 rounded-xl"
+                    style="background: rgba(255, 42, 109, 0.1)"
+                  >
+                    <p class="font-bold text-sm">Ingress Controller</p>
+                    <p class="text-xs text-gray-400">
+                      Receives request, checks rules
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Step 4 -->
+              <div class="flex items-start">
+                <div
+                  class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center mr-3 mt-1"
+                >
+                  <span class="text-white font-bold">4</span>
+                </div>
+                <div class="flex-1">
+                  <div
+                    class="p-3 rounded-xl"
+                    style="background: rgba(0, 255, 157, 0.1)"
+                  >
+                    <p class="font-bold text-sm">Routing Decision</p>
+                    <p class="text-xs text-gray-400">
+                      Host: shopify.local, Path: / → frontend-service
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Step 5 -->
+              <div class="flex items-start">
+                <div
+                  class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center mr-3 mt-1"
+                >
+                  <span class="text-white font-bold">5</span>
+                </div>
+                <div class="flex-1">
+                  <div
+                    class="p-3 rounded-xl"
+                    style="background: rgba(255, 204, 0, 0.1)"
+                  >
+                    <p class="font-bold text-sm">Service Load Balancing</p>
+                    <p class="text-xs text-gray-400">
+                      frontend-service → frontend pod(s)
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Step 6 -->
+              <div class="flex items-start">
+                <div
+                  class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center mr-3 mt-1"
+                >
+                  <span class="text-white font-bold">6</span>
+                </div>
+                <div class="flex-1">
+                  <div
+                    class="p-3 rounded-xl"
+                    style="background: rgba(0, 217, 255, 0.1)"
+                  >
+                    <p class="font-bold text-sm">Nginx Processing</p>
+                    <p class="text-xs text-gray-400">
+                      If path starts with /api → proxy to backend:3000
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Step 7 -->
+              <div class="flex items-start">
+                <div
+                  class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center mr-3 mt-1"
+                >
+                  <span class="text-white font-bold">7</span>
+                </div>
+                <div class="flex-1">
+                  <div
+                    class="p-3 rounded-xl"
+                    style="background: rgba(185, 103, 255, 0.1)"
+                  >
+                    <p class="font-bold text-sm">Backend Service</p>
+                    <p class="text-xs text-gray-400">
+                      backend service → backend pods (load balanced)
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Step 8 -->
+              <div class="flex items-start">
+                <div
+                  class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center mr-3 mt-1"
+                >
+                  <span class="text-white font-bold">8</span>
+                </div>
+                <div class="flex-1">
+                  <div
+                    class="p-3 rounded-xl"
+                    style="background: rgba(255, 42, 109, 0.1)"
+                  >
+                    <p class="font-bold text-sm">Response Travels Back</p>
+                    <p class="text-xs text-gray-400">
+                      Reverse path back to browser
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-6">
+              <p class="font-bold mb-2 gradient-text-green">
+                ✅ Why Ingress is Powerful:
+              </p>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
+                <div
+                  class="p-3 rounded-xl"
+                  style="background: rgba(0, 255, 157, 0.1)"
+                >
+                  <p class="font-bold text-sm">Single Entry Point</p>
+                  <p class="text-xs text-gray-400">
+                    One domain, multiple services
+                  </p>
+                </div>
+                <div
+                  class="p-3 rounded-xl"
+                  style="background: rgba(0, 217, 255, 0.1)"
+                >
+                  <p class="font-bold text-sm">Clean URLs</p>
+                  <p class="text-xs text-gray-400">No port numbers in URL</p>
+                </div>
+                <div
+                  class="p-3 rounded-xl"
+                  style="background: rgba(185, 103, 255, 0.1)"
+                >
+                  <p class="font-bold text-sm">Central Control</p>
+                  <p class="text-xs text-gray-400">All routing in one place</p>
+                </div>
+                <div
+                  class="p-3 rounded-xl"
+                  style="background: rgba(255, 42, 109, 0.1)"
+                >
+                  <p class="font-bold text-sm">Production Ready</p>
+                  <p class="text-xs text-gray-400">
+                    SSL/TLS, load balancing, auth
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Final Summary -->
+      <section class="mb-12">
+        <div class="card-bg rounded-2xl p-6 neon-border">
+          <div class="flex items-center mb-6">
+            <div
+              class="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 p-3 rounded-xl mr-4"
+            >
+              <i class="fas fa-trophy text-white text-2xl"></i>
+            </div>
+            <div>
+              <h2
+                class="text-2xl md:text-3xl font-bold"
+                style="
+                  background: linear-gradient(90deg, #00d9ff, #b967ff, #ff2a6d);
+                  -webkit-background-clip: text;
+                  background-clip: text;
+                  color: transparent;
+                "
+              >
+                Complete Architecture Summary
+              </h2>
+              <p class="text-gray-400">Everything working together</p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <h4 class="font-bold text-lg mb-4 gradient-text-green">
+                🎯 What You've Built:
+              </h4>
+              <div class="space-y-3">
+                <div class="flex items-start">
+                  <div
+                    class="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center mr-3 mt-1"
+                  >
+                    <i class="fas fa-check text-white text-xs"></i>
+                  </div>
+                  <div>
+                    <p class="font-bold">Backend API</p>
+                    <p class="text-sm text-gray-400">
+                      2 replicas with health checks, limits, secrets
+                    </p>
+                  </div>
+                </div>
+                <div class="flex items-start">
+                  <div
+                    class="w-6 h-6 rounded-full bg-purple-500 flex items-center justify-center mr-3 mt-1"
+                  >
+                    <i class="fas fa-check text-white text-xs"></i>
+                  </div>
+                  <div>
+                    <p class="font-bold">Internal Networking</p>
+                    <p class="text-sm text-gray-400">
+                      Services with DNS, load balancing
+                    </p>
+                  </div>
+                </div>
+                <div class="flex items-start">
+                  <div
+                    class="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center mr-3 mt-1"
+                  >
+                    <i class="fas fa-check text-white text-xs"></i>
+                  </div>
+                  <div>
+                    <p class="font-bold">Frontend Application</p>
+                    <p class="text-sm text-gray-400">
+                      React + Nginx with API proxy
+                    </p>
+                  </div>
+                </div>
+                <div class="flex items-start">
+                  <div
+                    class="w-6 h-6 rounded-full bg-pink-500 flex items-center justify-center mr-3 mt-1"
+                  >
+                    <i class="fas fa-check text-white text-xs"></i>
+                  </div>
+                  <div>
+                    <p class="font-bold">External Access</p>
+                    <p class="text-sm text-gray-400">
+                      Ingress with domain routing
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h4 class="font-bold text-lg mb-4 gradient-text-blue">
+                🚀 Production Features Achieved:
+              </h4>
+              <div class="grid grid-cols-2 gap-2">
+                <div class="p-2 rounded bg-gray-800">
+                  <p class="text-xs font-bold">High Availability</p>
+                  <p class="text-xs text-gray-400">Multiple replicas</p>
+                </div>
+                <div class="p-2 rounded bg-gray-800">
+                  <p class="text-xs font-bold">Self-Healing</p>
+                  <p class="text-xs text-gray-400">Auto restart</p>
+                </div>
+                <div class="p-2 rounded bg-gray-800">
+                  <p class="text-xs font-bold">Load Balancing</p>
+                  <p class="text-xs text-gray-400">Automatic distribution</p>
+                </div>
+                <div class="p-2 rounded bg-gray-800">
+                  <p class="text-xs font-bold">Resource Protection</p>
+                  <p class="text-xs text-gray-400">CPU/Memory limits</p>
+                </div>
+                <div class="p-2 rounded bg-gray-800">
+                  <p class="text-xs font-bold">Secure Secrets</p>
+                  <p class="text-xs text-gray-400">Encrypted at rest</p>
+                </div>
+                <div class="p-2 rounded bg-gray-800">
+                  <p class="text-xs font-bold">Health Monitoring</p>
+                  <p class="text-xs text-gray-400">Readiness/Liveness</p>
+                </div>
+                <div class="p-2 rounded bg-gray-800">
+                  <p class="text-xs font-bold">Zero Downtime</p>
+                  <p class="text-xs text-gray-400">Rolling updates</p>
+                </div>
+                <div class="p-2 rounded bg-gray-800">
+                  <p class="text-xs font-bold">Clean Networking</p>
+                  <p class="text-xs text-gray-400">DNS, internal/external</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-8 text-center">
+            <div
+              class="inline-block p-4 rounded-xl"
+              style="background: rgba(0, 217, 255, 0.1)"
+            >
+              <p class="font-bold gradient-text-blue">🎉 Congratulations!</p>
+              <p class="text-sm text-gray-400">
+                You now understand Kubernetes YAML at production level
+              </p>
+              <div class="mt-3">
+                <span class="k8s-badge mr-2">Deployment</span>
+                <span class="k8s-badge mr-2">Service</span>
+                <span class="k8s-badge mr-2">Ingress</span>
+                <span class="k8s-badge">Secrets</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="mt-12 pt-8 border-t border-gray-800">
+      <div class="text-center text-gray-500 text-sm">
+        <p>
+          Kubernetes YAML Complete Guide • Line by Line Explanation • Production
+          Ready Configuration
+        </p>
+        <p class="mt-2">
+          Built with <i class="fas fa-heart text-red-500"></i> for Kubernetes
+          learners
+        </p>
+      </div>
+    </footer>
+
+    <script>
+      // Add interactive highlighting
+      document.addEventListener('DOMContentLoaded', function () {
+        const codeLines = document.querySelectorAll('.line-explanation');
+
+        codeLines.forEach((line) => {
+          line.addEventListener('mouseenter', function () {
+            const lineNumber = this.querySelector('.line-number').textContent;
+            // You could add more interactive features here
+          });
+        });
+
+        // Add click to copy functionality
+        const codeBlocks = document.querySelectorAll('.code-block code');
+        codeBlocks.forEach((block) => {
+          block.addEventListener('click', function () {
+            const text = this.textContent;
+            navigator.clipboard.writeText(text).then(() => {
+              const original = this.innerHTML;
+              this.innerHTML =
+                '<i class="fas fa-check text-green-500 mr-2"></i>Copied!';
+              setTimeout(() => {
+                this.innerHTML = original;
+              }, 2000);
+            });
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

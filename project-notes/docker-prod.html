@@ -1,0 +1,1856 @@
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Complete Docker Journey: Dev to Production</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600&family=Inter:wght@300;400;500;600;700&display=swap');
+
+      * {
+        font-family: 'Inter', sans-serif;
+      }
+
+      code,
+      pre {
+        font-family: 'Fira Code', monospace !important;
+      }
+
+      :root {
+        --neon-blue: #00d9ff;
+        --neon-purple: #b967ff;
+        --neon-pink: #ff2a6d;
+        --neon-green: #00ff9d;
+        --dark-bg: #0a0a0f;
+        --darker-bg: #050508;
+        --card-bg: #11111f;
+        --border-glow: rgba(0, 217, 255, 0.2);
+      }
+
+      body {
+        background-color: var(--dark-bg);
+        color: #e2e8f0;
+        background-image:
+          radial-gradient(
+            circle at 10% 20%,
+            rgba(185, 103, 255, 0.05) 0%,
+            transparent 20%
+          ),
+          radial-gradient(
+            circle at 90% 80%,
+            rgba(0, 217, 255, 0.05) 0%,
+            transparent 20%
+          );
+        min-height: 100vh;
+      }
+
+      .neon-border {
+        border: 1px solid rgba(0, 217, 255, 0.3);
+        box-shadow:
+          0 0 15px rgba(0, 217, 255, 0.1),
+          inset 0 0 15px rgba(0, 217, 255, 0.05);
+      }
+
+      .gradient-text-blue {
+        background: linear-gradient(90deg, var(--neon-blue), #0099ff);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+
+      .gradient-text-purple {
+        background: linear-gradient(90deg, var(--neon-purple), #ff00ff);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+
+      .gradient-text-pink {
+        background: linear-gradient(90deg, var(--neon-pink), #ff0066);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+
+      .gradient-text-green {
+        background: linear-gradient(90deg, var(--neon-green), #00cc88);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+
+      .card-bg {
+        background-color: var(--card-bg);
+        backdrop-filter: blur(10px);
+      }
+
+      .code-block {
+        background-color: var(--darker-bg);
+        border-left: 4px solid var(--neon-blue);
+        position: relative;
+      }
+
+      .phase-timeline {
+        position: relative;
+        overflow: hidden;
+      }
+
+      .phase-timeline::before {
+        content: '';
+        position: absolute;
+        left: 2rem;
+        top: 0;
+        bottom: 0;
+        width: 3px;
+        background: linear-gradient(
+          to bottom,
+          transparent,
+          var(--neon-blue),
+          transparent
+        );
+      }
+
+      .note-tip {
+        border-left: 4px solid var(--neon-green);
+        background-color: rgba(0, 255, 157, 0.05);
+      }
+
+      .note-warning {
+        border-left: 4px solid var(--neon-pink);
+        background-color: rgba(255, 42, 109, 0.05);
+      }
+
+      .note-info {
+        border-left: 4px solid var(--neon-blue);
+        background-color: rgba(0, 217, 255, 0.05);
+      }
+
+      .note-important {
+        border-left: 4px solid var(--neon-purple);
+        background-color: rgba(185, 103, 255, 0.05);
+      }
+
+      .docker-command {
+        background: linear-gradient(
+          135deg,
+          rgba(0, 0, 0, 0.8),
+          rgba(32, 32, 32, 0.9)
+        );
+        border: 1px solid rgba(0, 217, 255, 0.4);
+      }
+
+      .architecture-diagram {
+        position: relative;
+        overflow: hidden;
+      }
+
+      .architecture-diagram::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(
+          45deg,
+          transparent 95%,
+          rgba(0, 217, 255, 0.03) 100%
+        );
+        pointer-events: none;
+      }
+
+      .docker-keyword {
+        color: var(--neon-blue);
+        font-weight: bold;
+      }
+
+      .docker-arg {
+        color: var(--neon-green);
+      }
+
+      .docker-string {
+        color: #ffcc00;
+      }
+
+      .terminal-line {
+        position: relative;
+      }
+
+      .terminal-line::before {
+        content: '$';
+        position: absolute;
+        left: -1.5rem;
+        color: var(--neon-green);
+      }
+
+      @media (max-width: 768px) {
+        .mobile-stack {
+          flex-direction: column;
+        }
+
+        .phase-timeline::before {
+          left: 1.5rem;
+        }
+
+        .code-block {
+          font-size: 0.85rem;
+          overflow-x: auto;
+        }
+      }
+    </style>
+  </head>
+  <body class="p-4 md:p-6 lg:p-8">
+    <!-- Header Section -->
+    <header class="mb-10 md:mb-12">
+      <div
+        class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4"
+      >
+        <div>
+          <h1
+            class="text-3xl md:text-4xl lg:text-5xl font-bold mb-2 gradient-text-blue"
+          >
+            <i class="fas fa-ship section-icon"></i>Complete Docker Journey
+          </h1>
+          <p class="text-lg text-gray-300">
+            From Local Development to Production Pipeline
+          </p>
+        </div>
+        <div class="flex items-center space-x-2">
+          <span
+            class="px-3 py-1 rounded-full text-sm font-medium card-bg neon-border"
+          >
+            <i class="fas fa-laptop-code text-neon-blue mr-1"></i> Dev → Prod
+          </span>
+          <span
+            class="px-3 py-1 rounded-full text-sm font-medium card-bg neon-border"
+          >
+            <i class="fas fa-network-wired text-neon-purple mr-1"></i>
+            Architecture
+          </span>
+          <span
+            class="px-3 py-1 rounded-full text-sm font-medium card-bg neon-border"
+          >
+            <i class="fas fa-rocket text-neon-green mr-1"></i> CI/CD
+          </span>
+        </div>
+      </div>
+
+      <div class="card-bg rounded-2xl p-6 neon-border mb-8">
+        <div class="flex items-center mb-4">
+          <i class="fas fa-road text-neon-purple text-2xl mr-4"></i>
+          <div>
+            <h3 class="text-xl font-bold gradient-text-purple">
+              The Complete Journey
+            </h3>
+            <p class="text-gray-400">
+              Four phases of understanding modern application deployment
+            </p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div
+            class="text-center p-4 rounded-xl"
+            style="background: rgba(0, 217, 255, 0.1)"
+          >
+            <div
+              class="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 flex items-center justify-center mx-auto mb-2"
+            >
+              <span class="font-bold text-white text-xl">1</span>
+            </div>
+            <p class="font-bold">Local Dev</p>
+            <p class="text-xs text-gray-400">npm run dev</p>
+          </div>
+
+          <div
+            class="text-center p-4 rounded-xl"
+            style="background: rgba(185, 103, 255, 0.1)"
+          >
+            <div
+              class="w-12 h-12 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center mx-auto mb-2"
+            >
+              <span class="font-bold text-white text-xl">2</span>
+            </div>
+            <p class="font-bold">Docker Compose</p>
+            <p class="text-xs text-gray-400">Local containers</p>
+          </div>
+
+          <div
+            class="text-center p-4 rounded-xl"
+            style="background: rgba(255, 42, 109, 0.1)"
+          >
+            <div
+              class="w-12 h-12 rounded-full bg-gradient-to-r from-red-500 to-pink-500 flex items-center justify-center mx-auto mb-2"
+            >
+              <span class="font-bold text-white text-xl">3</span>
+            </div>
+            <p class="font-bold">CI/CD Pipeline</p>
+            <p class="text-xs text-gray-400">GitHub Actions</p>
+          </div>
+
+          <div
+            class="text-center p-4 rounded-xl"
+            style="background: rgba(0, 255, 157, 0.1)"
+          >
+            <div
+              class="w-12 h-12 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 flex items-center justify-center mx-auto mb-2"
+            >
+              <span class="font-bold text-white text-xl">4</span>
+            </div>
+            <p class="font-bold">Production Run</p>
+            <p class="text-xs text-gray-400">Manual Docker</p>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto">
+      <!-- Phase Timeline -->
+      <section class="mb-12 md:mb-16">
+        <div class="flex items-center mb-6">
+          <div
+            class="bg-gradient-to-r from-purple-500 to-pink-400 p-3 rounded-xl mr-4"
+          >
+            <i class="fas fa-timeline text-white text-2xl"></i>
+          </div>
+          <div>
+            <h2 class="text-2xl md:text-3xl font-bold gradient-text-purple">
+              The 4-Phase Journey
+            </h2>
+            <p class="text-gray-400">
+              From simple development to production deployment
+            </p>
+          </div>
+        </div>
+
+        <div class="card-bg rounded-2xl p-6 neon-border phase-timeline">
+          <!-- Phase 1 -->
+          <div class="relative pl-12 md:pl-16 mb-12">
+            <div
+              class="absolute left-0 top-0 w-8 h-8 md:w-10 md:h-10 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 flex items-center justify-center"
+            >
+              <span class="font-bold text-white text-sm md:text-base">1</span>
+            </div>
+
+            <div class="mb-2">
+              <h3 class="text-xl font-bold gradient-text-blue">
+                Phase 1: Local Development (No Docker)
+              </h3>
+              <p class="text-gray-400">The simple beginning</p>
+            </div>
+
+            <div class="code-block rounded-lg p-4 mb-4">
+              <div class="terminal-line pl-6 mb-2">
+                <code>npm run dev</code>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div>
+                <h4 class="font-bold text-lg mb-3 gradient-text-green">
+                  What Happened?
+                </h4>
+                <ul class="space-y-2 text-gray-300">
+                  <li class="flex items-start">
+                    <i class="fas fa-server text-neon-green mt-1 mr-2"></i>
+                    <span
+                      >Node backend ran on
+                      <span class="font-mono bg-gray-800 px-2 py-1 rounded"
+                        >localhost:3000</span
+                      ></span
+                    >
+                  </li>
+                  <li class="flex items-start">
+                    <i class="fas fa-desktop text-neon-green mt-1 mr-2"></i>
+                    <span
+                      >React dev server ran on
+                      <span class="font-mono bg-gray-800 px-2 py-1 rounded"
+                        >localhost:5173</span
+                      ></span
+                    >
+                  </li>
+                  <li class="flex items-start">
+                    <i class="fas fa-file-alt text-neon-green mt-1 mr-2"></i>
+                    <span
+                      ><span class="font-mono bg-gray-800 px-2 py-1 rounded"
+                        >.env</span
+                      >
+                      file loaded automatically via dotenv</span
+                    >
+                  </li>
+                  <li class="flex items-start">
+                    <i class="fas fa-globe text-neon-green mt-1 mr-2"></i>
+                    <span
+                      >Browser called
+                      <span class="font-mono bg-gray-800 px-2 py-1 rounded"
+                        >http://localhost:3000</span
+                      ></span
+                    >
+                  </li>
+                </ul>
+              </div>
+
+              <div>
+                <h4 class="font-bold text-lg mb-3 gradient-text-purple">
+                  Why It Worked
+                </h4>
+                <div class="note-tip p-4 rounded-lg">
+                  <div class="flex items-start">
+                    <i class="fas fa-laptop text-neon-green mt-1 mr-3"></i>
+                    <div>
+                      <p class="font-bold mb-1">
+                        Everything ran on your laptop
+                      </p>
+                      <p class="text-gray-300">
+                        <span class="font-mono">localhost</span> meant your
+                        laptop. Simple, direct environment.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div
+                  class="mt-4 p-4 rounded-xl"
+                  style="background: rgba(11, 15, 25, 0.8)"
+                >
+                  <div class="flex items-center justify-center">
+                    <div class="text-center">
+                      <div
+                        class="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center mx-auto mb-1"
+                      >
+                        <i class="fas fa-user text-white"></i>
+                      </div>
+                      <p class="text-xs">Developer</p>
+                    </div>
+                    <div class="mx-4">
+                      <i class="fas fa-arrow-right text-neon-blue"></i>
+                    </div>
+                    <div class="text-center">
+                      <div
+                        class="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center mx-auto mb-1"
+                      >
+                        <i class="fas fa-laptop text-white"></i>
+                      </div>
+                      <p class="text-xs">Local Machine</p>
+                      <p class="text-xs text-gray-400">Everything runs here</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Phase 2 -->
+          <div class="relative pl-12 md:pl-16 mb-12">
+            <div
+              class="absolute left-0 top-0 w-8 h-8 md:w-10 md:h-10 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center"
+            >
+              <span class="font-bold text-white text-sm md:text-base">2</span>
+            </div>
+
+            <div class="mb-2">
+              <h3 class="text-xl font-bold gradient-text-purple">
+                Phase 2: Docker Compose (Local Containerized Dev)
+              </h3>
+              <p class="text-gray-400">Containerization begins</p>
+            </div>
+
+            <div class="code-block rounded-lg p-4 mb-4">
+              <div class="terminal-line pl-6">
+                <code>docker compose up</code>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div>
+                <h4 class="font-bold text-lg mb-3 gradient-text-blue">
+                  What Compose Did Automatically
+                </h4>
+                <div class="space-y-3">
+                  <div class="flex items-start">
+                    <div
+                      class="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center mr-3 mt-1"
+                    >
+                      <span class="text-white text-xs font-bold">1</span>
+                    </div>
+                    <span>Created Docker network</span>
+                  </div>
+                  <div class="flex items-start">
+                    <div
+                      class="w-6 h-6 rounded-full bg-purple-500 flex items-center justify-center mr-3 mt-1"
+                    >
+                      <span class="text-white text-xs font-bold">2</span>
+                    </div>
+                    <span>Built backend image</span>
+                  </div>
+                  <div class="flex items-start">
+                    <div
+                      class="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center mr-3 mt-1"
+                    >
+                      <span class="text-white text-xs font-bold">3</span>
+                    </div>
+                    <span
+                      >Built frontend image with
+                      <span class="font-mono bg-gray-800 px-2 py-1 rounded"
+                        >VITE_API_URL=/api</span
+                      ></span
+                    >
+                  </div>
+                  <div class="flex items-start">
+                    <div
+                      class="w-6 h-6 rounded-full bg-yellow-500 flex items-center justify-center mr-3 mt-1"
+                    >
+                      <span class="text-white text-xs font-bold">4</span>
+                    </div>
+                    <span>Started backend container</span>
+                  </div>
+                  <div class="flex items-start">
+                    <div
+                      class="w-6 h-6 rounded-full bg-red-500 flex items-center justify-center mr-3 mt-1"
+                    >
+                      <span class="text-white text-xs font-bold">5</span>
+                    </div>
+                    <span>Started frontend container</span>
+                  </div>
+                  <div class="flex items-start">
+                    <div
+                      class="w-6 h-6 rounded-full bg-indigo-500 flex items-center justify-center mr-3 mt-1"
+                    >
+                      <span class="text-white text-xs font-bold">6</span>
+                    </div>
+                    <span>Injected environment variables</span>
+                  </div>
+                  <div class="flex items-start">
+                    <div
+                      class="w-6 h-6 rounded-full bg-pink-500 flex items-center justify-center mr-3 mt-1"
+                    >
+                      <span class="text-white text-xs font-bold">7</span>
+                    </div>
+                    <span>Mapped ports</span>
+                  </div>
+                  <div class="flex items-start">
+                    <div
+                      class="w-6 h-6 rounded-full bg-teal-500 flex items-center justify-center mr-3 mt-1"
+                    >
+                      <span class="text-white text-xs font-bold">8</span>
+                    </div>
+                    <span>Connected containers internally</span>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h4 class="font-bold text-lg mb-3 gradient-text-green">
+                  New Architecture
+                </h4>
+
+                <div
+                  class="architecture-diagram p-4 rounded-xl mb-4"
+                  style="background: rgba(11, 15, 25, 0.8)"
+                >
+                  <div class="flex flex-col items-center">
+                    <div class="flex items-center mb-4">
+                      <div class="text-center">
+                        <div
+                          class="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center mb-1"
+                        >
+                          <i class="fas fa-globe text-white"></i>
+                        </div>
+                        <p class="text-xs">Browser</p>
+                      </div>
+                      <div class="mx-4">
+                        <i class="fas fa-arrow-right text-neon-blue"></i>
+                      </div>
+                      <div class="text-center">
+                        <div
+                          class="w-12 h-12 rounded-full bg-green-500 flex items-center justify-center mb-1"
+                        >
+                          <i class="fas fa-server text-white"></i>
+                        </div>
+                        <p class="text-xs">Nginx</p>
+                        <p class="text-xs text-gray-400">:80</p>
+                      </div>
+                      <div class="mx-4">
+                        <i class="fas fa-arrow-right text-neon-blue"></i>
+                      </div>
+                      <div class="text-center">
+                        <div
+                          class="w-12 h-12 rounded-full bg-purple-500 flex items-center justify-center mb-1"
+                        >
+                          <span class="text-white font-bold text-xs">/api</span>
+                        </div>
+                        <p class="text-xs">Proxy</p>
+                      </div>
+                      <div class="mx-4">
+                        <i class="fas fa-arrow-right text-neon-blue"></i>
+                      </div>
+                      <div class="text-center">
+                        <div
+                          class="w-12 h-12 rounded-full bg-yellow-500 flex items-center justify-center mb-1"
+                        >
+                          <i class="fas fa-database text-white"></i>
+                        </div>
+                        <p class="text-xs">Backend</p>
+                        <p class="text-xs text-gray-400">:3000</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="note-important p-4 rounded-lg">
+                  <div class="flex items-start">
+                    <i class="fas fa-magic text-neon-purple mt-1 mr-3"></i>
+                    <div>
+                      <p class="font-bold mb-1">Compose Hides Complexity</p>
+                      <p class="text-gray-300">
+                        You did NOT manually create network. You did NOT
+                        manually run containers. Compose orchestrated
+                        everything.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Phase 3 -->
+          <div class="relative pl-12 md:pl-16 mb-12">
+            <div
+              class="absolute left-0 top-0 w-8 h-8 md:w-10 md:h-10 rounded-full bg-gradient-to-r from-red-500 to-pink-500 flex items-center justify-center"
+            >
+              <span class="font-bold text-white text-sm md:text-base">3</span>
+            </div>
+
+            <div class="mb-2">
+              <h3 class="text-xl font-bold gradient-text-pink">
+                Phase 3: CI/CD Pipeline
+              </h3>
+              <p class="text-gray-400">Automation enters the picture</p>
+            </div>
+
+            <div class="code-block rounded-lg p-4 mb-4">
+              <div class="terminal-line pl-6">
+                <code>git push origin master</code>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div>
+                <h4 class="font-bold text-lg mb-3 gradient-text-blue">
+                  What GitHub Actions Does
+                </h4>
+
+                <div class="space-y-4">
+                  <div class="flex items-center">
+                    <div
+                      class="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 flex items-center justify-center mr-3"
+                    >
+                      <i class="fas fa-cloud text-white"></i>
+                    </div>
+                    <div>
+                      <p class="font-bold">Spins up Ubuntu server</p>
+                      <p class="text-sm text-gray-400">
+                        Fresh VM in GitHub cloud
+                      </p>
+                    </div>
+                  </div>
+
+                  <div class="flex items-center">
+                    <div
+                      class="w-10 h-10 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center mr-3"
+                    >
+                      <i class="fab fa-github text-white"></i>
+                    </div>
+                    <div>
+                      <p class="font-bold">Clones your repo</p>
+                      <p class="text-sm text-gray-400">actions/checkout@v4</p>
+                    </div>
+                  </div>
+
+                  <div class="flex items-center">
+                    <div
+                      class="w-10 h-10 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 flex items-center justify-center mr-3"
+                    >
+                      <i class="fas fa-key text-white"></i>
+                    </div>
+                    <div>
+                      <p class="font-bold">Logs into Docker Hub</p>
+                      <p class="text-sm text-gray-400">Using GitHub Secrets</p>
+                    </div>
+                  </div>
+
+                  <div class="flex items-center">
+                    <div
+                      class="w-10 h-10 rounded-full bg-gradient-to-r from-yellow-500 to-orange-500 flex items-center justify-center mr-3"
+                    >
+                      <i class="fas fa-cube text-white"></i>
+                    </div>
+                    <div>
+                      <p class="font-bold">Builds & pushes images</p>
+                      <p class="text-sm text-gray-400">
+                        docker/build-push-action@v5
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h4 class="font-bold text-lg mb-3 gradient-text-purple">
+                  Critical Detail
+                </h4>
+
+                <div class="note-warning p-4 rounded-lg mb-4">
+                  <div class="flex items-start">
+                    <i
+                      class="fas fa-exclamation-circle text-neon-pink mt-1 mr-3"
+                    ></i>
+                    <div>
+                      <p class="font-bold mb-1">
+                        Fixed CI to pass correct build args
+                      </p>
+                      <div class="code-block rounded p-2 mt-2">
+                        <code>VITE_API_URL=/api</code>
+                      </div>
+                      <p class="text-gray-300 mt-2">
+                        So production image matches compose behavior.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div
+                  class="p-4 rounded-xl"
+                  style="background: rgba(17, 17, 31, 0.9)"
+                >
+                  <h5 class="font-bold mb-2 gradient-text-green">
+                    Why This Matters
+                  </h5>
+                  <p class="text-sm text-gray-300">Same image works in:</p>
+                  <div class="grid grid-cols-2 gap-2 mt-2">
+                    <div class="text-center p-2 rounded bg-gray-800">
+                      <i class="fas fa-laptop text-neon-blue"></i>
+                      <p class="text-xs mt-1">Local Docker</p>
+                    </div>
+                    <div class="text-center p-2 rounded bg-gray-800">
+                      <i class="fas fa-cloud text-neon-blue"></i>
+                      <p class="text-xs mt-1">Production</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Phase 4 -->
+          <div class="relative pl-12 md:pl-16">
+            <div
+              class="absolute left-0 top-0 w-8 h-8 md:w-10 md:h-10 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 flex items-center justify-center"
+            >
+              <span class="font-bold text-white text-sm md:text-base">4</span>
+            </div>
+
+            <div class="mb-2">
+              <h3 class="text-xl font-bold gradient-text-green">
+                Phase 4: Manual Docker Run (Simulating Production)
+              </h3>
+              <p class="text-gray-400">Testing the production images</p>
+            </div>
+
+            <div class="code-block rounded-lg p-4 mb-4">
+              <div class="terminal-line pl-6 mb-2">
+                <code>docker pull amiitdev/shopify-frontend:latest</code>
+              </div>
+              <div class="terminal-line pl-6">
+                <code>docker run -d --name frontend -p 8081:80 ...</code>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div>
+                <h4 class="font-bold text-lg mb-3 gradient-text-blue">
+                  What You Had To Do Manually
+                </h4>
+
+                <div class="space-y-3">
+                  <div class="flex items-start">
+                    <i
+                      class="fas fa-network-wired text-neon-blue mt-1 mr-2"
+                    ></i>
+                    <span>Create network manually</span>
+                  </div>
+                  <div class="flex items-start">
+                    <i class="fas fa-file-import text-neon-blue mt-1 mr-2"></i>
+                    <span>Pass env file manually</span>
+                  </div>
+                  <div class="flex items-start">
+                    <i class="fas fa-plug text-neon-blue mt-1 mr-2"></i>
+                    <span>Map ports manually</span>
+                  </div>
+                  <div class="flex items-start">
+                    <i class="fas fa-tag text-neon-blue mt-1 mr-2"></i>
+                    <span>Name containers manually</span>
+                  </div>
+                  <div class="flex items-start">
+                    <i class="fas fa-redo text-neon-blue mt-1 mr-2"></i>
+                    <span>Restart manually</span>
+                  </div>
+                  <div class="flex items-start">
+                    <i class="fas fa-trash text-neon-blue mt-1 mr-2"></i>
+                    <span>Remove old containers</span>
+                  </div>
+                  <div class="flex items-start">
+                    <i
+                      class="fas fa-exclamation-triangle text-neon-blue mt-1 mr-2"
+                    ></i>
+                    <span>Handle port conflicts</span>
+                  </div>
+                </div>
+
+                <div class="note-warning p-4 rounded-lg mt-4">
+                  <div class="flex items-start">
+                    <i class="fas fa-hand-paper text-neon-pink mt-1 mr-3"></i>
+                    <div>
+                      <p class="font-bold mb-1">This is Raw Docker</p>
+                      <p class="text-gray-300">
+                        This is what Docker Compose automates for you.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h4 class="font-bold text-lg mb-3 gradient-text-purple">
+                  Why Manual Testing Mattered
+                </h4>
+
+                <div class="note-tip p-4 rounded-lg mb-4">
+                  <div class="flex items-start">
+                    <i
+                      class="fas fa-check-circle text-neon-green mt-1 mr-3"
+                    ></i>
+                    <div>
+                      <p class="font-bold mb-1">Real Production Validation</p>
+                      <p class="text-gray-300">
+                        When you manually ran Docker commands, you proved:
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="space-y-2 text-sm">
+                  <div class="flex items-center">
+                    <i class="fas fa-check text-neon-green mr-2"></i>
+                    <span>CI built image correctly</span>
+                  </div>
+                  <div class="flex items-center">
+                    <i class="fas fa-check text-neon-green mr-2"></i>
+                    <span>Build args passed correctly</span>
+                  </div>
+                  <div class="flex items-center">
+                    <i class="fas fa-check text-neon-green mr-2"></i>
+                    <span>Reverse proxy works</span>
+                  </div>
+                  <div class="flex items-center">
+                    <i class="fas fa-check text-neon-green mr-2"></i>
+                    <span>Internal Docker DNS works</span>
+                  </div>
+                  <div class="flex items-center">
+                    <i class="fas fa-check text-neon-green mr-2"></i>
+                    <span>No localhost misuse</span>
+                  </div>
+                  <div class="flex items-center">
+                    <i class="fas fa-check text-neon-green mr-2"></i>
+                    <span>No CORS errors</span>
+                  </div>
+                  <div class="flex items-center">
+                    <i class="fas fa-check text-neon-green mr-2"></i>
+                    <span>No hardcoded backend URL</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Key Comparison: Compose vs Manual -->
+      <section class="mb-12 md:mb-16">
+        <div class="flex items-center mb-6">
+          <div
+            class="bg-gradient-to-r from-blue-500 to-cyan-400 p-3 rounded-xl mr-4"
+          >
+            <i class="fas fa-balance-scale text-white text-2xl"></i>
+          </div>
+          <div>
+            <h2 class="text-2xl md:text-3xl font-bold gradient-text-blue">
+              Docker Compose vs Manual Docker
+            </h2>
+            <p class="text-gray-400">
+              Understanding the automation vs control tradeoff
+            </p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <!-- Docker Compose -->
+          <div class="card-bg rounded-2xl p-6 neon-border">
+            <div class="flex items-center mb-4">
+              <div
+                class="w-10 h-10 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 flex items-center justify-center mr-4"
+              >
+                <i class="fas fa-robot text-white"></i>
+              </div>
+              <h3 class="text-xl font-bold gradient-text-green">
+                Docker Compose 🟢
+              </h3>
+            </div>
+
+            <div class="code-block rounded-lg p-4 mb-4">
+              <div class="terminal-line pl-6">
+                <code>docker compose up</code>
+              </div>
+            </div>
+
+            <h4 class="font-bold text-lg mb-3 gradient-text-green">
+              Compose Automatically:
+            </h4>
+
+            <div class="space-y-3">
+              <div class="flex items-start">
+                <i class="fas fa-file-code text-neon-green mt-1 mr-2"></i>
+                <span
+                  >Reads
+                  <span class="font-mono bg-gray-800 px-2 py-1 rounded"
+                    >docker-compose.yml</span
+                  ></span
+                >
+              </div>
+              <div class="flex items-start">
+                <i class="fas fa-network-wired text-neon-green mt-1 mr-2"></i>
+                <span>Creates network automatically</span>
+              </div>
+              <div class="flex items-start">
+                <i class="fas fa-tag text-neon-green mt-1 mr-2"></i>
+                <span>Names containers automatically</span>
+              </div>
+              <div class="flex items-start">
+                <i class="fas fa-file-import text-neon-green mt-1 mr-2"></i>
+                <span>Injects env files automatically</span>
+              </div>
+              <div class="flex items-start">
+                <i class="fas fa-cogs text-neon-green mt-1 mr-2"></i>
+                <span>Builds with build args</span>
+              </div>
+              <div class="flex items-start">
+                <i class="fas fa-project-diagram text-neon-green mt-1 mr-2"></i>
+                <span>Handles dependencies</span>
+              </div>
+              <div class="flex items-start">
+                <i class="fas fa-redo text-neon-green mt-1 mr-2"></i>
+                <span>Handles restart policies</span>
+              </div>
+            </div>
+
+            <div class="mt-4 note-tip p-4 rounded-lg">
+              <div class="flex items-start">
+                <i class="fas fa-magic text-neon-green mt-1 mr-3"></i>
+                <div>
+                  <p class="font-bold mb-1">Compose = Orchestrator</p>
+                  <p class="text-gray-300">
+                    Manages multiple containers as a single application. Perfect
+                    for development and local testing.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Manual Docker -->
+          <div class="card-bg rounded-2xl p-6 neon-border">
+            <div class="flex items-center mb-4">
+              <div
+                class="w-10 h-10 rounded-full bg-gradient-to-r from-red-500 to-pink-500 flex items-center justify-center mr-4"
+              >
+                <i class="fas fa-hand-paper text-white"></i>
+              </div>
+              <h3 class="text-xl font-bold gradient-text-pink">
+                Manual Docker 🔴
+              </h3>
+            </div>
+
+            <div class="code-block rounded-lg p-4 mb-4">
+              <div class="terminal-line pl-6 mb-2">
+                <code>docker network create shopify-net</code>
+              </div>
+              <div class="terminal-line pl-6 mb-2">
+                <code>docker run --env-file server/.env ...</code>
+              </div>
+              <div class="terminal-line pl-6">
+                <code>docker run --network shopify-net ...</code>
+              </div>
+            </div>
+
+            <h4 class="font-bold text-lg mb-3 gradient-text-pink">
+              You Must Manually:
+            </h4>
+
+            <div class="space-y-3">
+              <div class="flex items-start">
+                <i class="fas fa-network-wired text-neon-pink mt-1 mr-2"></i>
+                <span>Create and manage networks</span>
+              </div>
+              <div class="flex items-start">
+                <i class="fas fa-tag text-neon-pink mt-1 mr-2"></i>
+                <span>Name containers</span>
+              </div>
+              <div class="flex items-start">
+                <i class="fas fa-plug text-neon-pink mt-1 mr-2"></i>
+                <span>Bind ports correctly</span>
+              </div>
+              <div class="flex items-start">
+                <i class="fas fa-file-import text-neon-pink mt-1 mr-2"></i>
+                <span>Inject environment variables</span>
+              </div>
+              <div class="flex items-start">
+                <i class="fas fa-broom text-neon-pink mt-1 mr-2"></i>
+                <span>Clean up old containers</span>
+              </div>
+              <div class="flex items-start">
+                <i class="fas fa-redo text-neon-pink mt-1 mr-2"></i>
+                <span>Handle restarts</span>
+              </div>
+              <div class="flex items-start">
+                <i
+                  class="fas fa-exclamation-triangle text-neon-pink mt-1 mr-2"
+                ></i>
+                <span>Resolve port conflicts</span>
+              </div>
+            </div>
+
+            <div class="mt-4 note-warning p-4 rounded-lg">
+              <div class="flex items-start">
+                <i class="fas fa-tools text-neon-pink mt-1 mr-3"></i>
+                <div>
+                  <p class="font-bold mb-1">Manual = Low-level Control</p>
+                  <p class="text-gray-300">
+                    You have full control but must manage everything. Closer to
+                    production reality.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- The Big Architectural Insight -->
+      <section class="mb-12 md:mb-16">
+        <div class="flex items-center mb-6">
+          <div
+            class="bg-gradient-to-r from-purple-500 to-pink-400 p-3 rounded-xl mr-4"
+          >
+            <i class="fas fa-lightbulb text-white text-2xl"></i>
+          </div>
+          <div>
+            <h2 class="text-2xl md:text-3xl font-bold gradient-text-purple">
+              The Big Architectural Insight
+            </h2>
+            <p class="text-gray-400">
+              Understanding why /api was the right choice
+            </p>
+          </div>
+        </div>
+
+        <div class="card-bg rounded-2xl p-6 neon-border architecture-diagram">
+          <div class="mb-6">
+            <h3 class="text-xl font-bold mb-4 gradient-text-blue text-center">
+              Final Production Architecture
+            </h3>
+
+            <div class="flex flex-col items-center">
+              <!-- Row 1 -->
+              <div class="flex items-center justify-center mb-4">
+                <div
+                  class="text-center p-4 rounded-xl"
+                  style="background: rgba(0, 217, 255, 0.1)"
+                >
+                  <div
+                    class="w-16 h-16 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 flex items-center justify-center mb-2 mx-auto"
+                  >
+                    <i class="fas fa-globe text-white text-2xl"></i>
+                  </div>
+                  <p class="font-bold">Browser</p>
+                  <p class="text-xs text-gray-400">User</p>
+                </div>
+
+                <div class="mx-4">
+                  <i class="fas fa-arrow-right text-2xl text-neon-blue"></i>
+                </div>
+
+                <div
+                  class="text-center p-4 rounded-xl"
+                  style="background: rgba(0, 255, 157, 0.1)"
+                >
+                  <div
+                    class="w-16 h-16 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 flex items-center justify-center mb-2 mx-auto"
+                  >
+                    <i class="fas fa-shield-alt text-white text-2xl"></i>
+                  </div>
+                  <p class="font-bold">Nginx</p>
+                  <p class="text-xs text-gray-400">Frontend container</p>
+                  <p class="text-xs text-gray-400">Single entry point</p>
+                </div>
+              </div>
+
+              <!-- Arrow down -->
+              <div class="mb-4">
+                <i class="fas fa-arrow-down text-2xl text-neon-purple"></i>
+              </div>
+
+              <!-- Row 2 -->
+              <div class="flex items-center justify-center mb-4">
+                <div
+                  class="text-center p-4 rounded-xl"
+                  style="background: rgba(185, 103, 255, 0.1)"
+                >
+                  <div
+                    class="w-16 h-16 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center mb-2 mx-auto"
+                  >
+                    <span class="text-white font-bold text-xl">/api</span>
+                  </div>
+                  <p class="font-bold">Reverse Proxy</p>
+                  <p class="text-xs text-gray-400">Path-based routing</p>
+                </div>
+
+                <div class="mx-4">
+                  <i class="fas fa-arrow-right text-2xl text-neon-purple"></i>
+                </div>
+
+                <div
+                  class="text-center p-4 rounded-xl"
+                  style="background: rgba(255, 42, 109, 0.1)"
+                >
+                  <div
+                    class="w-16 h-16 rounded-full bg-gradient-to-r from-red-500 to-pink-500 flex items-center justify-center mb-2 mx-auto"
+                  >
+                    <i class="fas fa-server text-white text-2xl"></i>
+                  </div>
+                  <p class="font-bold">Backend</p>
+                  <p class="text-xs text-gray-400">Hidden container</p>
+                  <p class="text-xs text-gray-400">Private network</p>
+                </div>
+              </div>
+
+              <!-- Arrow down -->
+              <div class="mb-4">
+                <i class="fas fa-arrow-down text-2xl text-neon-blue"></i>
+              </div>
+
+              <!-- Row 3 -->
+              <div
+                class="text-center p-4 rounded-xl"
+                style="background: rgba(255, 204, 0, 0.1)"
+              >
+                <div
+                  class="w-16 h-16 rounded-full bg-gradient-to-r from-yellow-500 to-orange-500 flex items-center justify-center mb-2 mx-auto"
+                >
+                  <i class="fas fa-database text-white text-2xl"></i>
+                </div>
+                <p class="font-bold">MongoDB</p>
+                <p class="text-xs text-gray-400">Database</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div>
+              <h4 class="font-bold text-lg mb-3 gradient-text-green">
+                Key Architectural Principles
+              </h4>
+
+              <div class="space-y-3">
+                <div class="flex items-start">
+                  <i class="fas fa-eye-slash text-neon-green mt-1 mr-2"></i>
+                  <div>
+                    <p class="font-bold">Backend is Hidden</p>
+                    <p class="text-sm text-gray-400">
+                      Frontend never knows backend hostname. No direct access.
+                    </p>
+                  </div>
+                </div>
+
+                <div class="flex items-start">
+                  <i class="fas fa-shield-alt text-neon-blue mt-1 mr-2"></i>
+                  <div>
+                    <p class="font-bold">No CORS Needed</p>
+                    <p class="text-sm text-gray-400">
+                      Same origin = no cross-origin issues.
+                    </p>
+                  </div>
+                </div>
+
+                <div class="flex items-start">
+                  <i
+                    class="fas fa-project-diagram text-neon-purple mt-1 mr-2"
+                  ></i>
+                  <div>
+                    <p class="font-bold">Clean Separation</p>
+                    <p class="text-sm text-gray-400">
+                      Frontend and backend are independent services.
+                    </p>
+                  </div>
+                </div>
+
+                <div class="flex items-start">
+                  <i class="fas fa-building text-neon-pink mt-1 mr-2"></i>
+                  <div>
+                    <p class="font-bold">Professional Pattern</p>
+                    <p class="text-sm text-gray-400">
+                      Used by all major companies.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h4 class="font-bold text-lg mb-3 gradient-text-purple">
+                Why /api Was The Right Choice
+              </h4>
+
+              <div class="note-important p-4 rounded-lg mb-4">
+                <div class="flex items-start">
+                  <i class="fas fa-gem text-neon-purple mt-1 mr-3"></i>
+                  <div>
+                    <p class="font-bold mb-1">Comparison: Two Approaches</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-2 gap-4">
+                <div
+                  class="p-3 rounded-xl"
+                  style="
+                    background: rgba(255, 42, 109, 0.1);
+                    border: 1px solid rgba(255, 42, 109, 0.3);
+                  "
+                >
+                  <p
+                    class="font-bold text-sm mb-2 text-center gradient-text-pink"
+                  >
+                    Wrong Way
+                  </p>
+                  <p class="text-sm font-mono text-center">
+                    http://backend:3000
+                  </p>
+                  <ul class="text-xs text-gray-400 mt-2 space-y-1">
+                    <li>✓ Works inside Docker</li>
+                    <li>✗ Breaks in browser</li>
+                    <li>✗ Tightly coupled</li>
+                    <li>✗ Not portable</li>
+                  </ul>
+                </div>
+
+                <div
+                  class="p-3 rounded-xl"
+                  style="
+                    background: rgba(0, 255, 157, 0.1);
+                    border: 1px solid rgba(0, 255, 157, 0.3);
+                  "
+                >
+                  <p
+                    class="font-bold text-sm mb-2 text-center gradient-text-green"
+                  >
+                    Right Way
+                  </p>
+                  <p class="text-sm font-mono text-center">/api</p>
+                  <ul class="text-xs text-gray-400 mt-2 space-y-1">
+                    <li>✓ Works locally</li>
+                    <li>✓ Works in Docker</li>
+                    <li>✓ Works in production</li>
+                    <li>✓ Clean architecture</li>
+                  </ul>
+                </div>
+              </div>
+
+              <p class="text-sm text-gray-400 mt-4">
+                Using relative URL (<span class="font-mono">/api</span>) makes
+                your application portable across environments.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Step-by-Step Testing Guide -->
+      <section class="mb-12 md:mb-16">
+        <div class="flex items-center mb-6">
+          <div
+            class="bg-gradient-to-r from-green-500 to-emerald-400 p-3 rounded-xl mr-4"
+          >
+            <i class="fas fa-vial text-white text-2xl"></i>
+          </div>
+          <div>
+            <h2 class="text-2xl md:text-3xl font-bold gradient-text-green">
+              Step-by-Step: Testing CI Images
+            </h2>
+            <p class="text-gray-400">
+              Validating your production Docker images
+            </p>
+          </div>
+        </div>
+
+        <div class="card-bg rounded-2xl p-6 neon-border">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Left Column: Steps -->
+            <div>
+              <h3 class="text-xl font-bold mb-4 gradient-text-blue">
+                Complete Testing Process
+              </h3>
+
+              <div class="space-y-6">
+                <!-- Step 1 -->
+                <div class="flex items-start">
+                  <div
+                    class="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 flex items-center justify-center mr-4 mt-1"
+                  >
+                    <span class="font-bold text-white">1</span>
+                  </div>
+                  <div>
+                    <h4 class="font-bold text-lg mb-2">Pull New Images</h4>
+                    <div class="docker-command rounded-lg p-3 mb-2">
+                      <div class="terminal-line pl-6">
+                        <code
+                          >docker pull amiitdev/shopify-frontend:latest</code
+                        >
+                      </div>
+                    </div>
+                    <div class="note-warning p-3 rounded-lg">
+                      <div class="flex items-start">
+                        <i
+                          class="fas fa-exclamation-triangle text-neon-pink mt-1 mr-2"
+                        ></i>
+                        <div>
+                          <p class="text-sm font-bold">VERY IMPORTANT</p>
+                          <p class="text-xs">
+                            If you skip this, you're still running old image.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="flex items-start">
+                  <div
+                    class="w-10 h-10 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center mr-4 mt-1"
+                  >
+                    <span class="font-bold text-white">2</span>
+                  </div>
+                  <div>
+                    <h4 class="font-bold text-lg mb-2">Stop Old Containers</h4>
+                    <div class="docker-command rounded-lg p-3 mb-2">
+                      <div class="terminal-line pl-6">
+                        <code>docker rm -f frontend backend</code>
+                      </div>
+                    </div>
+                    <p class="text-sm text-gray-400">
+                      Or
+                      <span class="font-mono bg-gray-800 px-2 py-1 rounded"
+                        >docker compose down</span
+                      >
+                      if using compose.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Column: More Steps -->
+            <div>
+              <h3 class="text-xl font-bold mb-4 gradient-text-purple">
+                &nbsp;
+              </h3>
+
+              <div class="space-y-6">
+                <!-- Step 3 -->
+                <div class="flex items-start">
+                  <div
+                    class="w-10 h-10 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 flex items-center justify-center mr-4 mt-1"
+                  >
+                    <span class="font-bold text-white">3</span>
+                  </div>
+                  <div>
+                    <h4 class="font-bold text-lg mb-2">
+                      Run Using Docker Hub Images
+                    </h4>
+
+                    <div class="docker-command rounded-lg p-3 mb-2">
+                      <div class="terminal-line pl-6 mb-1">
+                        <code>docker run -d \</code>
+                      </div>
+                      <div class="pl-8 mb-1">
+                        <code>--name backend \</code>
+                      </div>
+                      <div class="pl-8 mb-1">
+                        <code>--network shopify-net \</code>
+                      </div>
+                      <div class="pl-8 mb-1">
+                        <code>-p 3000:3000 \</code>
+                      </div>
+                      <div class="pl-8 mb-1">
+                        <code>--env-file server/.env \</code>
+                      </div>
+                      <div class="pl-8">
+                        <code>amiitdev/shopify-backend:latest</code>
+                      </div>
+                    </div>
+
+                    <div class="docker-command rounded-lg p-3">
+                      <div class="terminal-line pl-6 mb-1">
+                        <code>docker run -d \</code>
+                      </div>
+                      <div class="pl-8 mb-1">
+                        <code>--name frontend \</code>
+                      </div>
+                      <div class="pl-8 mb-1">
+                        <code>--network shopify-net \</code>
+                      </div>
+                      <div class="pl-8">
+                        <code>-p 8081:80 \</code>
+                      </div>
+                      <div class="pl-8">
+                        <code>amiitdev/shopify-frontend:latest</code>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Step 4 -->
+                <div class="flex items-start">
+                  <div
+                    class="w-10 h-10 rounded-full bg-gradient-to-r from-yellow-500 to-orange-500 flex items-center justify-center mr-4 mt-1"
+                  >
+                    <span class="font-bold text-white">4</span>
+                  </div>
+                  <div>
+                    <h4 class="font-bold text-lg mb-2">Test in Browser</h4>
+                    <div class="code-block rounded-lg p-3 mb-2">
+                      <div class="flex items-center">
+                        <i class="fas fa-globe text-neon-blue mr-2"></i>
+                        <code>http://localhost:8081</code>
+                      </div>
+                    </div>
+                    <p class="text-sm font-bold mb-1">Checklist:</p>
+                    <div class="grid grid-cols-2 gap-2 text-xs">
+                      <div class="flex items-center">
+                        <i class="fas fa-check-circle text-neon-green mr-1"></i>
+                        <span>UI loads?</span>
+                      </div>
+                      <div class="flex items-center">
+                        <i class="fas fa-check-circle text-neon-green mr-1"></i>
+                        <span>Products load?</span>
+                      </div>
+                      <div class="flex items-center">
+                        <i class="fas fa-check-circle text-neon-green mr-1"></i>
+                        <span>Login works?</span>
+                      </div>
+                      <div class="flex items-center">
+                        <i class="fas fa-check-circle text-neon-green mr-1"></i>
+                        <span>Any CORS error?</span>
+                      </div>
+                    </div>
+                    <p class="text-sm text-gray-400 mt-2">
+                      If everything works → CI build is correct.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- What You Actually Learned -->
+      <section class="mb-12">
+        <div class="flex items-center mb-6">
+          <div
+            class="bg-gradient-to-r from-yellow-500 to-orange-400 p-3 rounded-xl mr-4"
+          >
+            <i class="fas fa-graduation-cap text-white text-2xl"></i>
+          </div>
+          <div>
+            <h2
+              class="text-2xl md:text-3xl font-bold"
+              style="
+                background: linear-gradient(90deg, #ffcc00, #ff9966);
+                -webkit-background-clip: text;
+                background-clip: text;
+                color: transparent;
+              "
+            >
+              What You Actually Learned
+            </h2>
+            <p class="text-gray-400">Real container engineering knowledge</p>
+          </div>
+        </div>
+
+        <div class="card-bg rounded-2xl p-6 neon-border">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div
+              class="text-center p-4 rounded-xl"
+              style="background: rgba(0, 217, 255, 0.1)"
+            >
+              <div
+                class="w-16 h-16 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 flex items-center justify-center mx-auto mb-4"
+              >
+                <i class="fas fa-clock text-white text-2xl"></i>
+              </div>
+              <h4 class="font-bold text-lg mb-2">
+                Build-time vs Runtime Variables
+              </h4>
+              <p class="text-sm text-gray-300">
+                ARG vs ENV in Docker. Vite injects at build, not runtime.
+              </p>
+            </div>
+
+            <div
+              class="text-center p-4 rounded-xl"
+              style="background: rgba(185, 103, 255, 0.1)"
+            >
+              <div
+                class="w-16 h-16 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center mx-auto mb-4"
+              >
+                <i class="fas fa-cube text-white text-2xl"></i>
+              </div>
+              <h4 class="font-bold text-lg mb-2">Docker Image Immutability</h4>
+              <p class="text-sm text-gray-300">
+                Once built, images don't change. Environment config happens at
+                runtime.
+              </p>
+            </div>
+
+            <div
+              class="text-center p-4 rounded-xl"
+              style="background: rgba(255, 42, 109, 0.1)"
+            >
+              <div
+                class="w-16 h-16 rounded-full bg-gradient-to-r from-red-500 to-pink-500 flex items-center justify-center mx-auto mb-4"
+              >
+                <i class="fas fa-recycle text-white text-2xl"></i>
+              </div>
+              <h4 class="font-bold text-lg mb-2">Container Lifecycle</h4>
+              <p class="text-sm text-gray-300">
+                Create → Run → Stop → Remove. Understanding ephemeral nature.
+              </p>
+            </div>
+
+            <div
+              class="text-center p-4 rounded-xl"
+              style="background: rgba(0, 255, 157, 0.1)"
+            >
+              <div
+                class="w-16 h-16 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 flex items-center justify-center mx-auto mb-4"
+              >
+                <i class="fas fa-plug text-white text-2xl"></i>
+              </div>
+              <h4 class="font-bold text-lg mb-2">Port Binding Conflicts</h4>
+              <p class="text-sm text-gray-300">
+                Why ports can't be reused. Understanding host vs container
+                ports.
+              </p>
+            </div>
+
+            <div
+              class="text-center p-4 rounded-xl"
+              style="background: rgba(255, 204, 0, 0.1)"
+            >
+              <div
+                class="w-16 h-16 rounded-full bg-gradient-to-r from-yellow-500 to-orange-500 flex items-center justify-center mx-auto mb-4"
+              >
+                <i class="fas fa-network-wired text-white text-2xl"></i>
+              </div>
+              <h4 class="font-bold text-lg mb-2">Docker Networking</h4>
+              <p class="text-sm text-gray-300">
+                Bridge networks, service discovery, internal DNS.
+              </p>
+            </div>
+
+            <div
+              class="text-center p-4 rounded-xl"
+              style="background: rgba(0, 119, 255, 0.1)"
+            >
+              <div
+                class="w-16 h-16 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 flex items-center justify-center mx-auto mb-4"
+              >
+                <i class="fas fa-exchange-alt text-white text-2xl"></i>
+              </div>
+              <h4 class="font-bold text-lg mb-2">Reverse Proxy Routing</h4>
+              <p class="text-sm text-gray-300">
+                Nginx path-based routing. Single entry point architecture.
+              </p>
+            </div>
+
+            <div
+              class="text-center p-4 rounded-xl"
+              style="background: rgba(153, 51, 255, 0.1)"
+            >
+              <div
+                class="w-16 h-16 rounded-full bg-gradient-to-r from-purple-500 to-violet-500 flex items-center justify-center mx-auto mb-4"
+              >
+                <i class="fas fa-code-branch text-white text-2xl"></i>
+              </div>
+              <h4 class="font-bold text-lg mb-2">CI vs CD Difference</h4>
+              <p class="text-sm text-gray-300">
+                Continuous Integration (build/test) vs Continuous Deployment
+                (deploy).
+              </p>
+            </div>
+
+            <div
+              class="text-center p-4 rounded-xl"
+              style="background: rgba(255, 102, 102, 0.1)"
+            >
+              <div
+                class="w-16 h-16 rounded-full bg-gradient-to-r from-red-500 to-rose-500 flex items-center justify-center mx-auto mb-4"
+              >
+                <i class="fas fa-orchestration text-white text-2xl"></i>
+              </div>
+              <h4 class="font-bold text-lg mb-2">Compose Orchestration</h4>
+              <p class="text-sm text-gray-300">
+                Multi-container management. Dependency ordering.
+              </p>
+            </div>
+
+            <div
+              class="text-center p-4 rounded-xl"
+              style="background: rgba(51, 204, 204, 0.1)"
+            >
+              <div
+                class="w-16 h-16 rounded-full bg-gradient-to-r from-teal-500 to-cyan-500 flex items-center justify-center mx-auto mb-4"
+              >
+                <i class="fas fa-server text-white text-2xl"></i>
+              </div>
+              <h4 class="font-bold text-lg mb-2">Production vs Development</h4>
+              <p class="text-sm text-gray-300">
+                Environmental differences. Security considerations.
+              </p>
+            </div>
+          </div>
+
+          <div
+            class="mt-8 p-6 rounded-xl text-center"
+            style="background: rgba(17, 17, 31, 0.9)"
+          >
+            <h4 class="text-xl font-bold mb-4 gradient-text-purple">
+              <i class="fas fa-medal mr-2"></i>Level Up Complete
+            </h4>
+            <p class="text-lg text-gray-300 mb-4">
+              You've transitioned from "it works on my machine" to understanding
+              enterprise-grade deployment.
+            </p>
+            <div class="flex flex-wrap justify-center gap-4">
+              <div
+                class="px-4 py-2 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500"
+              >
+                <span class="font-bold">Container Expert</span>
+              </div>
+              <div
+                class="px-4 py-2 rounded-full bg-gradient-to-r from-purple-500 to-pink-500"
+              >
+                <span class="font-bold">CI/CD Practitioner</span>
+              </div>
+              <div
+                class="px-4 py-2 rounded-full bg-gradient-to-r from-green-500 to-emerald-500"
+              >
+                <span class="font-bold">Production Ready</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Final Summary -->
+      <section class="mb-12">
+        <div class="card-bg rounded-2xl p-8 neon-border text-center">
+          <div class="mb-6">
+            <div
+              class="w-24 h-24 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center mx-auto mb-4"
+            >
+              <i class="fas fa-flag-checkered text-white text-4xl"></i>
+            </div>
+            <h2 class="text-3xl font-bold mb-2 gradient-text-purple">
+              Journey Complete!
+            </h2>
+            <p class="text-xl text-gray-300">
+              From local npm start to production Docker deployment
+            </p>
+          </div>
+
+          <div class="max-w-3xl mx-auto">
+            <div class="grid grid-cols-4 gap-4 mb-8">
+              <div class="text-center">
+                <div
+                  class="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center mx-auto mb-2"
+                >
+                  <i class="fas fa-laptop-code text-white"></i>
+                </div>
+                <p class="text-sm font-bold">Local Dev</p>
+              </div>
+
+              <div class="text-center">
+                <div
+                  class="w-12 h-12 rounded-full bg-purple-500 flex items-center justify-center mx-auto mb-2"
+                >
+                  <i class="fas fa-box text-white"></i>
+                </div>
+                <p class="text-sm font-bold">Containers</p>
+              </div>
+
+              <div class="text-center">
+                <div
+                  class="w-12 h-12 rounded-full bg-red-500 flex items-center justify-center mx-auto mb-2"
+                >
+                  <i class="fas fa-robot text-white"></i>
+                </div>
+                <p class="text-sm font-bold">CI/CD</p>
+              </div>
+
+              <div class="text-center">
+                <div
+                  class="w-12 h-12 rounded-full bg-green-500 flex items-center justify-center mx-auto mb-2"
+                >
+                  <i class="fas fa-rocket text-white"></i>
+                </div>
+                <p class="text-sm font-bold">Production</p>
+              </div>
+            </div>
+
+            <p class="text-lg text-gray-300 mb-6">
+              You've mastered the complete pipeline: developing locally,
+              containerizing with Docker, automating with GitHub Actions, and
+              deploying to production.
+            </p>
+
+            <div class="note-important p-4 rounded-lg max-w-2xl mx-auto">
+              <div class="flex items-start">
+                <i class="fas fa-crown text-yellow-400 mt-1 mr-3"></i>
+                <div>
+                  <p class="text-gray-300">
+                    This knowledge makes you a
+                    <span class="font-bold gradient-text-purple"
+                      >full-stack DevOps engineer</span
+                    >, not just a developer. You understand the entire lifecycle
+                    of modern applications.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="mt-12 pt-8 border-t border-gray-800">
+      <div class="flex flex-col md:flex-row justify-between items-center">
+        <div class="mb-4 md:mb-0">
+          <p class="text-gray-400">
+            <i class="fas fa-ship text-neon-blue mr-2"></i>
+            Complete Docker Journey Guide
+          </p>
+          <p class="text-sm text-gray-500">
+            From development to production deployment mastery
+          </p>
+        </div>
+        <div class="flex space-x-4">
+          <div class="text-center">
+            <div
+              class="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 flex items-center justify-center"
+            >
+              <i class="fas fa-code text-white"></i>
+            </div>
+            <p class="text-xs mt-1 text-gray-400">Dev</p>
+          </div>
+          <div class="text-center">
+            <div
+              class="w-10 h-10 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center"
+            >
+              <i class="fas fa-docker text-white"></i>
+            </div>
+            <p class="text-xs mt-1 text-gray-400">Docker</p>
+          </div>
+          <div class="text-center">
+            <div
+              class="w-10 h-10 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 flex items-center justify-center"
+            >
+              <i class="fab fa-github text-white"></i>
+            </div>
+            <p class="text-xs mt-1 text-gray-400">CI/CD</p>
+          </div>
+        </div>
+      </div>
+      <p class="text-center text-gray-600 text-sm mt-6">
+        Real-World DevOps • Production Architecture • Enterprise Patterns
+      </p>
+    </footer>
+
+    <script>
+      // Interactive timeline highlighting
+      document.addEventListener('DOMContentLoaded', function () {
+        const phases = document.querySelectorAll('.phase-timeline > div');
+
+        phases.forEach((phase) => {
+          phase.addEventListener('mouseenter', function () {
+            this.style.transform = 'translateX(5px)';
+            this.style.transition = 'transform 0.3s ease';
+
+            const numberCircle = this.querySelector('.absolute div');
+            if (numberCircle) {
+              numberCircle.style.transform = 'scale(1.1)';
+              numberCircle.style.transition = 'transform 0.3s ease';
+            }
+          });
+
+          phase.addEventListener('mouseleave', function () {
+            this.style.transform = 'translateX(0)';
+
+            const numberCircle = this.querySelector('.absolute div');
+            if (numberCircle) {
+              numberCircle.style.transform = 'scale(1)';
+            }
+          });
+        });
+
+        // Copy commands on click
+        const dockerCommands = document.querySelectorAll('.docker-command');
+        dockerCommands.forEach((cmd) => {
+          cmd.addEventListener('click', function () {
+            const code = this.querySelector('code')?.textContent || '';
+            if (code && navigator.clipboard) {
+              // Remove line continuations for copying
+              const cleanCode = code.replace(/\\\s*\n\s*/g, ' ');
+              navigator.clipboard.writeText(cleanCode).then(() => {
+                const originalBg = this.style.background;
+                this.style.background =
+                  'linear-gradient(135deg, rgba(0, 255, 157, 0.2), rgba(0, 217, 255, 0.2))';
+                setTimeout(() => {
+                  this.style.background = originalBg;
+                }, 500);
+              });
+            }
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

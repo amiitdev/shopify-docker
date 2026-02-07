@@ -49,3 +49,6 @@ bower_components/
 # Others
 .idea/
 *.swp
+
+# Kubernetes secrets
+k8s/secret.yaml
