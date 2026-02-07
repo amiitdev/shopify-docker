@@ -1,14 +1,20 @@
-import { createContext, useState, useEffect } from "react";
-import axios from "axios";
-import API_url from "../config/api.js";
+import { createContext, useState, useEffect } from 'react';
+import axios from 'axios';
+import API_url from '../config/api.js';
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   // Initialize user state from localStorage if available
   const [user, setUser] = useState(() => {
-    const storedUser = localStorage.getItem("user");
-    return storedUser ? JSON.parse(storedUser) : null;
+    try {
+      const storedUser = localStorage.getItem('user');
+      return storedUser ? JSON.parse(storedUser) : null;
+    } catch (error) {
+      console.error('Invalid user in localStorage');
+      localStorage.removeItem('user');
+      return null;
+    }
   });
 
   const register = async (fullname, email, password) => {
@@ -24,12 +30,12 @@ export const AuthProvider = ({ children }) => {
     const response = await axios.post(
       `${API_url}/api/login`,
       { email, password },
-      { withCredentials: true }
+      { withCredentials: true },
     );
     const data = response.data;
     setUser(data.user);
     // Store user in localStorage
-    localStorage.setItem("user", JSON.stringify(data.user));
+    localStorage.setItem('user', JSON.stringify(data.user));
     return data;
   };
 
@@ -37,7 +43,7 @@ export const AuthProvider = ({ children }) => {
     await axios.post(`${API_url}/api/logout`, {}, { withCredentials: true });
     setUser(null);
     // Remove user from localStorage
-    localStorage.removeItem("user");
+    localStorage.removeItem('user');
   };
 
   const checkAuth = async () => {
@@ -48,11 +54,11 @@ export const AuthProvider = ({ children }) => {
       // Update both state and localStorage
       setUser(res.data.user);
       console.log(res.data.user);
-      localStorage.setItem("user", JSON.stringify(res.data.user));
+      localStorage.setItem('user', JSON.stringify(res.data.user));
     } catch (err) {
-      console.log("Auth check error:", err);
+      console.log('Auth check error:', err);
       setUser(null);
-      localStorage.removeItem("user");
+      localStorage.removeItem('user');
     }
   };
 
