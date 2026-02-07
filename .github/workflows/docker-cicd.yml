@@ -32,5 +32,5 @@ jobs:
           context: ./client
           push: true
           build-args: |
-            VITE_API_URL=
+            VITE_API_URL=https://shopify-docker-production.up.railway.app
           tags: amiitdev/shopify-frontend:latest
